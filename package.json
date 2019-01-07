@@ -1,6 +1,6 @@
 {
   "name": "@gerhobbelt/markdown-it-kbd",
-  "version": "1.1.0-1",
+  "version": "2.0.0-1",
   "description": "Markdown-it syntax add-on for keystrokes. Renders [[x]] as <kbd>x</kbd>",
   "keywords": [
     "markdown-it",
@@ -17,11 +17,12 @@
   "files": [
     "README.md",
     "LICENSE",
-    "build/index.js"
+    "build/index.js",
+    "CHANGELOG.md"
   ],
   "main": "build/index.js",
   "engines": {
-    "node": ">=4"
+    "node": ">=6.0.0"
   },
   "repository": {
     "type": "git",
@@ -30,8 +31,8 @@
   "scripts": {
     "build": "babel *.js -d build",
     "lint": "eslint *.js",
-    "pretest": " npm run build",
-    "unittest": "mocha build/test.js",
+    "prepare": "npm run build",
+    "unittest": "mocha test.js",
     "test": "npm run lint && npm run unittest",
     "pub": "npm publish --access public"
   },
@@ -40,13 +41,20 @@
     "@gerhobbelt/babel-core": "7.2.1-26",
     "@gerhobbelt/babel-plugin-add-module-exports": "0.3.3-1",
     "@gerhobbelt/babel-preset-env": "7.2.1-26",
+    "@gerhobbelt/babel-register": "7.2.1-26",
+    "@gerhobbelt/debug": "4.1.1-4",
     "@gerhobbelt/markdown-it": "8.4.2-24",
     "@gerhobbelt/markdown-it-attrs": "0.8.1-8",
     "@gerhobbelt/markdown-it-testgen": "0.1.5-6",
     "chai": "4.2.0",
     "chai-string": "1.5.0",
     "eslint": "5.12.0",
-    "mocha": "5.2.0"
+    "mocha": "5.2.0",
+    "slash": "2.0.0"
+  },
+  "peerDependencies": {
+    "@gerhobbelt/markdown-it": "~8.4.2-24",
+    "@gerhobbelt/markdown-it-attrs": "~0.8.1-8"
   },
   "babel": {
     "presets": [

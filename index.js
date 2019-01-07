@@ -6,7 +6,7 @@ const MARKER_CLOSE = ']';
 const TAG = 'kbd';
 
 /*
- * Add delimiters for double occurences of MARKER_SYMBOL.
+ * Add delimiters for double occurrences of MARKER_SYMBOL.
  */
 function tokenize(state, silent) {
 	if (silent) {
@@ -43,6 +43,11 @@ function tokenize(state, silent) {
 		}
 	}
 
+	// input ended before closing sequence
+	if (end === -1) {
+		return false;
+	}
+
 	// start tag
 	state.push('kbd_open', TAG, 1);
 	// parse inner
@@ -57,8 +62,6 @@ function tokenize(state, silent) {
 	return true;
 }
 
-function kbdplugin(markdownit) {
+export default function kbdplugin(markdownit) {
 	markdownit.inline.ruler.before('link', 'kbd', tokenize);
 }
-
-export default kbdplugin;
