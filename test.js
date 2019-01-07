@@ -2,8 +2,8 @@
 
 import chai, {expect} from 'chai';
 import chaiString from 'chai-string';
-import markdownit from 'markdown-it';
-import markdownItAttrs from 'markdown-it-attrs';
+import markdownit from '@gerhobbelt/markdown-it';
+import markdownItAttrs from '@gerhobbelt/markdown-it-attrs';
 import markdownItKbd from './index';
 import fs from 'fs';
 
