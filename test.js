@@ -1,12 +1,10 @@
+/* eslint-env mocha */
 
-/* eslint-env mocha, es6 */
-
-import chai from 'chai';
-const expect = chai.expect;
+import chai, { expect } from 'chai';
 import chaiString from 'chai-string';
-import markdownit from '@gerhobbelt/markdown-it';
-import markdownItAttrs from '@gerhobbelt/markdown-it-attrs';
-import markdownItKbd from '../';
+import markdownit from 'markdown-it';
+import markdownItAttrs from 'markdown-it-attrs';
+import markdownItKbd from './index';
 import fs from 'fs';
 
 chai.use(chaiString);
