@@ -26400,7 +26400,7 @@ function kbdplugin(markdownit) {
   markdownit.inline.ruler.before('link', 'kbd', tokenize$3);
 }
 
-/* eslint-env mocha, es6 */
+/* eslint-env mocha */
 const expect$1 = chai$2.expect;
 chai$2.use(chaiString);
 
