@@ -3,65 +3,54 @@
   "version": "2.0.0-2",
   "description": "Markdown-it syntax add-on for keystrokes. Renders [[x]] as <kbd>x</kbd>",
   "keywords": [
-    "markdown-it",
     "markdown-it-plugin",
+    "markdown-it",
+    "markdown",
     "keystroke",
     "kbd"
   ],
-  "homepage": "https://github.com/jGleitz/markdown-it-kbd",
-  "license": "GPL-3.0",
   "author": {
     "name": "Joshua Gleitze",
     "url": "https://joshuagleitze.de"
   },
-  "files": [
-    "README.md",
-    "LICENSE",
-    "build/index.js",
-    "CHANGELOG.md"
-  ],
-  "main": "build/index.js",
+  "repository": "jGleitz/markdown-it-kbd",
+  "license": "GPL-3.0",
+  "type": "module",
+  "source": "index.js",
+  "main": "dist/markdownItKbd.js",
+  "module": "dist/markdownItKbd.mjs",
   "engines": {
-    "node": ">=6.0.0"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/jGleitz/markdown-it-kbd.git"
+    "node": ">=10"
   },
   "scripts": {
-    "build": "babel *.js -d build",
-    "lint": "eslint *.js",
-    "pretest": "npm run build",
-    "unittest": "mocha test.js",
-    "test": "npm run lint && npm run unittest",
+    "build": "make",
+    "test": "make test",
+    "todo": "make todo",
+    "clean": "make clean",
+    "superclean": "make superclean",
+    "doc": "make doc",
+    "lint": "make lint",
+    "lintfix": "make lintfix",
+    "cov": "make report-coverage",
     "pub": "npm publish --access public"
   },
   "devDependencies": {
-    "@gerhobbelt/babel-cli": "7.2.1-26",
-    "@gerhobbelt/babel-core": "7.2.1-26",
-    "@gerhobbelt/babel-plugin-add-module-exports": "0.3.3-1",
-    "@gerhobbelt/babel-preset-env": "7.2.1-26",
-    "@gerhobbelt/babel-register": "7.2.1-26",
-    "@gerhobbelt/debug": "4.1.1-4",
-    "@gerhobbelt/markdown-it": "8.4.2-24",
-    "@gerhobbelt/markdown-it-attrs": "0.8.1-8",
-    "@gerhobbelt/markdown-it-testgen": "0.1.5-6",
+    "@gerhobbelt/markdown-it": "11.0.0-36",
+    "@gerhobbelt/markdown-it-attrs": "^3.0.3-18",
+    "@gerhobbelt/markdown-it-testgen": "0.1.6-7",
+    "@gerhobbelt/prepend-header": "1.0.8-3",
+    "camelcase": "6.0.0",
     "chai": "4.2.0",
-    "chai-string": "1.5.0",
-    "eslint": "5.12.0",
-    "mocha": "5.2.0",
-    "slash": "2.0.0"
+    "chai-string": "^1.5.0",
+    "cross-env": "7.0.2",
+    "eslint": "7.2.0",
+    "microbundle": "0.12.1",
+    "mocha": "8.0.1",
+    "nyc": "15.1.0"
   },
-  "peerDependencies": {
-    "@gerhobbelt/markdown-it": "~8.4.2-24",
-    "@gerhobbelt/markdown-it-attrs": "~0.8.1-8"
-  },
-  "babel": {
-    "presets": [
-      "@gerhobbelt/babel-preset-env"
-    ],
-    "plugins": [
-      "@gerhobbelt/babel-plugin-add-module-exports"
-    ]
-  }
+  "reporter": [
+    "lcov",
+    "text",
+    "text-summary"
+  ]
 }

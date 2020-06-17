@@ -1,7 +1,10 @@
 PATH        := ./node_modules/.bin:${PATH}
 
-NPM_PACKAGE := $(shell node -e 'process.stdout.write(require("./package.json").name.replace(/^.*?\//, ""))')
-NPM_VERSION := $(shell node -e 'process.stdout.write(require("./package.json").version)')
+NPM_PACKAGE := $(shell support/getGlobalName.js package)
+NPM_VERSION := $(shell support/getGlobalName.js version)
+
+GLOBAL_NAME := $(shell support/getGlobalName.js global)
+BUNDLE_NAME := $(shell support/getGlobalName.js microbundle)
 
 TMP_PATH    := /tmp/${NPM_PACKAGE}-$(shell date +%s)
 
@@ -12,44 +15,62 @@ CURR_HEAD   := $(firstword $(shell git show-ref --hash HEAD | cut -b -6) master)
 GITHUB_PROJ := https://github.com//GerHobbelt/${NPM_PACKAGE}
 
 
-build: lint browserify test coverage todo 
+build: lintfix bundle test coverage todo 
 
 lint:
 	eslint .
 
-test: lint
-	mocha
+lintfix:
+	eslint --fix .
+
+bundle:
+	-rm -rf ./dist
+	mkdir dist
+	microbundle --no-compress --target node --strict --name ${GLOBAL_NAME}
+	microbundle --no-compress --target node --strict --name test           --no-sourcemap --no-pkg-main -f cjs -o test test/test.js
+	mv test/markdown-it-kbd.js test/test5.js
+	npx prepend-header 'dist/*js' support/header.js
+
+test:
+	# mocha
+	# kludgy way to execute the tests: `make build` compiles the tests to CommonJS in test5.js, then we execute those instead:
+	mocha test/test5.js
 
 coverage:
 	-rm -rf coverage
-	istanbul cover node_modules/mocha/bin/_mocha
+	-rm -rf .nyc_output
+	cross-env NODE_ENV=test nyc mocha test/test5.js
 
-report-coverage: coverage
+report-coverage: lint coverage
 
-browserify:
-	-rm -rf ./dist
-	mkdir dist
-	# Browserify
-	( printf "/*! ${NPM_PACKAGE} ${NPM_VERSION} ${GITHUB_PROJ} @license MIT */" ; \
-		browserify ./ -s markdownitKbd \
-		) > dist/${NPM_PACKAGE}.js
 
-minify: browserify
-	# Minify
-	uglifyjs dist/${NPM_PACKAGE}.js -b beautify=false,ascii_only=true -c -m \
-		--preamble "/*! ${NPM_PACKAGE} ${NPM_VERSION} ${GITHUB_PROJ} @license MIT */" \
-		> dist/${NPM_PACKAGE}.min.js
+publish:
+	@if test 0 -ne `git status --porcelain | wc -l` ; then \
+		echo "Unclean working tree. Commit or stash changes first." >&2 ; \
+		exit 128 ; \
+		fi
+	@if test 0 -ne `git fetch ; git status | grep '^# Your branch' | wc -l` ; then \
+		echo "Local/Remote history differs. Please push/pull changes." >&2 ; \
+		exit 128 ; \
+		fi
+	@if test 0 -ne `git tag -l ${NPM_VERSION} | wc -l` ; then \
+		echo "Tag ${NPM_VERSION} exists. Update package.json" >&2 ; \
+		exit 128 ; \
+		fi
+	git tag ${NPM_VERSION} && git push origin ${NPM_VERSION}
+	npm run pub
 
 todo:
 	@echo ""
 	@echo "TODO list"
 	@echo "---------"
 	@echo ""
-	grep 'TODO' -n -r ./lib 2>/dev/null || test true
+	grep 'TODO' -n -r ./ --exclude-dir=node_modules --exclude-dir=unicode-homographs --exclude-dir=.nyc_output --exclude-dir=dist --exclude-dir=coverage --exclude=Makefile 2>/dev/null || test true
 
 clean:
 	-rm -rf ./coverage/
 	-rm -rf ./dist/
+	-rm -rf ./.nyc_output/
 
 superclean: clean
 	-rm -rf ./node_modules/
@@ -58,7 +79,8 @@ superclean: clean
 prep: superclean
 	-ncu -a --packageFile=package.json
 	-npm install
+	-npm audit fix
 
 
-.PHONY: clean lint test todo coverage report-coverage build browserify minify superclean prep
+.PHONY: clean superclean prep publish lint lintfix test todo coverage report-coverage doc build gh-doc bundle
 .SILENT: help lint test todo
