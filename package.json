@@ -35,11 +35,11 @@
     "pub": "npm publish --access public"
   },
   "devDependencies": {
-    "@commitlint/cli": "8.3.5",
-    "@commitlint/config-conventional": "8.3.4",
-    "@gerhobbelt/markdown-it": "11.0.0-36",
+    "@commitlint/cli": "9.0.1",
+    "@commitlint/config-conventional": "9.0.1",
+    "@gerhobbelt/markdown-it": "11.0.1-41",
     "@gerhobbelt/markdown-it-attrs": "3.0.3-18",
-    "@gerhobbelt/markdown-it-testgen": "0.1.6-7",
+    "@gerhobbelt/markdown-it-testgen": "0.1.6-8",
     "@gerhobbelt/prepend-header": "1.0.8-3",
     "@semantic-release/changelog": "5.0.1",
     "@semantic-release/git": "9.0.0",
@@ -47,11 +47,11 @@
     "chai": "4.2.0",
     "chai-string": "1.5.0",
     "cross-env": "7.0.2",
-    "eslint": "7.2.0",
-    "microbundle": "0.12.1",
+    "eslint": "7.3.1",
+    "microbundle": "0.12.2",
     "mocha": "8.0.1",
     "nyc": "15.1.0",
-    "semantic-release": "17.0.8"
+    "semantic-release": "17.1.1"
   },
   "commitlint": {
     "extends": [

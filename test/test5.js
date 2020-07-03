@@ -6,8 +6,14 @@ var fs = _interopDefault(require('fs'));
 
 var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
-function createCommonjsModule(fn, module) {
-	return module = { exports: {} }, fn(module, module.exports), module.exports;
+function createCommonjsModule(fn, basedir, module) {
+	return module = {
+	  path: basedir,
+	  exports: {},
+	  require: function (path, base) {
+      return commonjsRequire();
+    }
+	}, fn(module, module.exports), module.exports;
 }
 
 function commonjsRequire () {
@@ -17545,6 +17551,10 @@ var entities$1 = /*#__PURE__*/Object.freeze({
 
 var require$$0 = getCjsExportFromNamespace(entities$1);
 
+// HTML5 entities map: { name -> utf16string }
+//
+
+
 /*eslint quotes:0*/
 var entities$2 = require$$0;
 
@@ -18113,6 +18123,9 @@ var uc_micro = {
 };
 
 var utils$1 = createCommonjsModule$1(function (module, exports) {
+// Utilities
+//
+
 
 function isNil(v) { return v === null || typeof v === 'undefined'; }
 
@@ -18455,6 +18468,11 @@ exports.trimLeftOffset      = trimLeftOffset;
 });
 
 // Parse link label
+//
+// this function assumes that first character ("[") already matches;
+// returns the end of the label
+//
+
 
 var parse_link_label = function parseLinkLabel(state, start, disableNested) {
   let level, found, marker, prevPos,
@@ -18497,6 +18515,11 @@ var parse_link_label = function parseLinkLabel(state, start, disableNested) {
 
   return labelEnd;
 };
+
+// Parse link destination
+//
+
+
 
 let unescapeAll = utils$1.unescapeAll;
 
@@ -18573,6 +18596,11 @@ var parse_link_destination = function parseLinkDestination(str, pos, max) {
   return result;
 };
 
+// Parse link title
+//
+
+
+
 let unescapeAll$1 = utils$1.unescapeAll;
 
 
@@ -18622,6 +18650,10 @@ var parse_link_title = function parseLinkTitle(str, pos, max) {
   return result;
 };
 
+// Just a shortcut for bulk export
+
+
+
 var parseLinkLabel       = parse_link_label;
 var parseLinkDestination = parse_link_destination;
 var parseLinkTitle       = parse_link_title;
@@ -18631,6 +18663,16 @@ var helpers = {
 	parseLinkDestination: parseLinkDestination,
 	parseLinkTitle: parseLinkTitle
 };
+
+/**
+ * class Renderer
+ *
+ * Generates HTML from parsed token stream. Each instance has independent
+ * copy of rules. Those can be rewritten with ease. Also, you can add new
+ * rules if you create plugin and adds new token types.
+ **/
+
+
 
 let assign          = utils$1.assign;
 let unescapeAll$2     = utils$1.unescapeAll;
@@ -18989,6 +19031,7 @@ var renderer = Renderer;
  **/
 
 
+
 /**
  * new Ruler()
  **/
@@ -19322,6 +19365,8 @@ var ruler = Ruler;
 // Normalize input string
 
 
+
+
 // https://spec.commonmark.org/0.29/#line-ending
 let NEWLINES_RE  = /\r\n?|\n/g;
 let NULL_RE      = /\0/g;
@@ -19379,6 +19424,19 @@ var inline = function inline(state, positionOffset) {
 };
 
 // Simple typographic replacements
+//
+// (c) (C) → ©
+// (tm) (TM) → ™
+// (r) (R) → ®
+// +- → ±
+// (p) (P) -> §
+// ... → … (also ?.... → ?.., !.... → !..)
+// ???????? → ???, !!!!! → !!!, `,,` → `,`
+// -- → &ndash;, --- → &mdash;
+// --> → →; <-- → ←; <--> → ↔
+// ==> → ⇒; <== → ⇐; <==> → ⇔
+//
+
 
 // TODO:
 // - fractionals 1/2, 1/4, 3/4 -> ½, ¼, ¾
@@ -19500,6 +19558,11 @@ var replacements = function replace(state) {
 
   }
 };
+
+// Convert straight quotation marks to typographic ones
+//
+
+
 
 let isWhiteSpace   = utils$1.isWhiteSpace;
 let isPunctChar    = utils$1.isPunctChar;
@@ -19699,6 +19762,8 @@ var smartquotes = function smartquotes(state) {
 };
 
 // Token class
+
+
 
 
 /**
@@ -19931,6 +19996,13 @@ Token.prototype.clone = function clone() {
 
 var token = Token;
 
+// Core state object
+//
+
+
+
+
+
 function StateCore(src, md, env) {
   this.src = src;
   this.env = env;
@@ -19944,6 +20016,18 @@ StateCore.prototype.Token = token;
 
 
 var state_core = StateCore;
+
+/** internal
+ * class Core
+ *
+ * Top-level rules executor. Glues block/inline parsers and does intermediate
+ * transformations.
+ **/
+
+
+
+
+
 
 let _rules = [
   [ 'normalize',      normalize      ],
@@ -19990,6 +20074,10 @@ Core.prototype.State = state_core;
 
 
 var parser_core = Core;
+
+// GFM table, non-standard
+
+
 
 let isSpace = utils$1.isSpace;
 let trimLeftOffset = utils$1.trimLeftOffset;
@@ -20252,6 +20340,8 @@ var table = function table(state, startLine, endLine, silent) {
 // Code block (4 spaces padded)
 
 
+
+
 var code = function code(state, startLine, endLine/*, silent*/) {
   let nextLine, last, token,
       pos = state.bMarks[startLine],
@@ -20288,6 +20378,8 @@ var code = function code(state, startLine, endLine/*, silent*/) {
 };
 
 // fences (``` lang, ~~~ lang)
+
+
 
 
 var fence = function fence(state, startLine, endLine, silent) {
@@ -20386,6 +20478,10 @@ var fence = function fence(state, startLine, endLine, silent) {
 
   return true;
 };
+
+// Block quotes
+
+
 
 let isSpace$1 = utils$1.isSpace;
 
@@ -20669,6 +20765,10 @@ var blockquote = function blockquote(state, startLine, endLine, silent) {
   return true;
 };
 
+// Horizontal rule
+
+
+
 let isSpace$2 = utils$1.isSpace;
 
 
@@ -20713,6 +20813,10 @@ var hr = function hr(state, startLine, endLine, silent) {
 
   return true;
 };
+
+// Lists
+
+
 
 let isSpace$3 = utils$1.isSpace;
 
@@ -21268,6 +21372,10 @@ var reference = function reference(state, startLine, _endLine, silent) {
   return true;
 };
 
+// heading (#, ##, ...)
+
+
+
 let isSpace$5 = utils$1.isSpace;
 let trimLeftOffset$1 = utils$1.trimLeftOffset;
 
@@ -21329,6 +21437,10 @@ var heading = function heading(state, startLine, endLine, silent) {
 
   return true;
 };
+
+// lheading (---, ===)
+
+
 
 let trimLeftOffset$2 = utils$1.trimLeftOffset;
 
@@ -21419,6 +21531,9 @@ var lheading = function lheading(state, startLine, endLine/*, silent*/) {
 };
 
 // List of valid html blocks names, according to commonmark spec
+// http://jgm.github.io/CommonMark/spec.html#html-blocks
+
+
 
 
 var html_blocks = [
@@ -21489,6 +21604,8 @@ var html_blocks = [
 
 // Regexps to match html elements
 
+
+
 let attr_name     = '[a-zA-Z_:@][a-zA-Z0-9:._-]*';
 
 let unquoted      = '[^"\'=<>`\\x00-\\x20]+';
@@ -21518,6 +21635,12 @@ var html_re = {
 	HTML_TAG_RE: HTML_TAG_RE_1,
 	HTML_OPEN_CLOSE_TAG_RE: HTML_OPEN_CLOSE_TAG_RE_1
 };
+
+// HTML block
+
+
+
+
 
 let HTML_OPEN_CLOSE_TAG_RE$1 = html_re.HTML_OPEN_CLOSE_TAG_RE;
 
@@ -21588,6 +21711,10 @@ var html_block = function html_block(state, startLine, endLine, silent) {
   return true;
 };
 
+// Paragraph
+
+
+
 let trimLeftOffset$3 = utils$1.trimLeftOffset;
 
 
@@ -21645,6 +21772,11 @@ var paragraph = function paragraph(state, startLine/*, endLine*/) {
 
   return true;
 };
+
+// Parser state class
+
+
+
 
 let isSpace$6 = utils$1.isSpace;
 
@@ -21878,6 +22010,17 @@ StateBlock.prototype.Token = token;
 
 var state_block = StateBlock;
 
+/** internal
+ * class ParserBlock
+ *
+ * Block-level tokenizer.
+ **/
+
+
+
+
+
+
 let _rules$1 = [
   // First 2 params - rule name & source. Secondary array - list of rules,
   // which can be terminated by this one.
@@ -21991,6 +22134,9 @@ ParserBlock.prototype.State = state_block;
 var parser_block = ParserBlock;
 
 // Handle implicit links found by rules_core/linkify that were not yet
+// subsumed by other inline rules (backticks, link, etc.)
+
+
 
 var tokenize = function linkify(state, silent) {
   let link, url, fullUrl, urlText, token;
@@ -22108,6 +22254,9 @@ var linkify = {
 };
 
 // Skip text characters for text token, place those to pending buffer
+// and increment current pos
+
+
 
 
 // Rule to skip pure text
@@ -22141,6 +22290,7 @@ function isTerminatorChar(ch) {
   case 0x5F/* _ */:
   case 0x60/* ` */:
   case 0x7B/* { */:
+  case 0x7C/* | */:
   case 0x7D/* } */:
   case 0x7E/* ~ */:
     return true;
@@ -22152,9 +22302,17 @@ function isTerminatorChar(ch) {
 var text = function text(state, silent) {
   let pos = state.pos;
 
-  while (pos < state.posMax && !isTerminatorChar(state.src.charCodeAt(pos)) &&
-         (!state.links || !state.links[pos])) {
-    pos++;
+  let terminatorRe = state.md.options.inlineTokenTerminatorsRe;
+  if (!terminatorRe) {
+    while (pos < state.posMax && !isTerminatorChar(state.src.charCodeAt(pos)) &&
+           (!state.links || !state.links[pos])) {
+      pos++;
+    }
+  } else {
+    while (pos < state.posMax && !isTerminatorChar(state.src.charCodeAt(pos)) && !terminatorRe.test(state.src[pos]) &&
+           (!state.links || !state.links[pos])) {
+      pos++;
+    }
   }
 
   if (pos === state.pos) { return false; }
@@ -22165,6 +22323,10 @@ var text = function text(state, silent) {
 
   return true;
 };
+
+// Proceess '\n'
+
+
 
 let isSpace$7 = utils$1.isSpace;
 
@@ -22203,6 +22365,10 @@ var newline = function newline(state, silent) {
   state.pos = pos;
   return true;
 };
+
+// Process escaped chars and hardbreaks
+
+
 
 let isSpace$8 = utils$1.isSpace;
 
@@ -22255,6 +22421,8 @@ var _escape = function escape(state, silent) {
 
 // Parse backticks
 
+
+
 var backticks = function backtick(state, silent) {
   let start, max, marker, matchStart, matchEnd, token,
       pos = state.pos,
@@ -22297,6 +22465,10 @@ var backticks = function backtick(state, silent) {
   state.pos += marker.length;
   return true;
 };
+
+// ~~strike through~~
+//
+
 
 let getLineOffset  = utils$1.getLineOffset;
 
@@ -22433,6 +22605,10 @@ var strikethrough = {
 	tokenize: tokenize$1,
 	postProcess: postProcess_1
 };
+
+// Process *this* and _that_
+//
+
 
 let getLineOffset$1  = utils$1.getLineOffset;
 
@@ -22577,6 +22753,10 @@ var emphasis = {
 	tokenize: tokenize$2,
 	postProcess: postProcess_1$1
 };
+
+// Process [link](<to> "stuff")
+
+
 
 let normalizeReference$1   = utils$1.normalizeReference;
 let isSpace$9              = utils$1.isSpace;
@@ -22724,6 +22904,10 @@ var link = function link(state, silent) {
   state.posMax = max;
   return true;
 };
+
+// Process ![image](<src> "title")
+
+
 
 let normalizeReference$2   = utils$1.normalizeReference;
 let isSpace$a              = utils$1.isSpace;
@@ -22889,6 +23073,8 @@ var image$1 = function image(state, silent) {
 // Process autolinks '<protocol:...>'
 
 
+
+
 /*eslint max-len:0*/
 let EMAIL_RE    = /^<([a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*)>/;
 let AUTOLINK_RE = /^<([a-zA-Z][a-zA-Z0-9+.\-]{1,31}):([^<>\x00-\x20]*)>/;
@@ -22961,6 +23147,11 @@ var autolink = function autolink(state, silent) {
   return false;
 };
 
+// Process html tags
+
+
+
+
 let HTML_TAG_RE$1 = html_re.HTML_TAG_RE;
 
 
@@ -23003,6 +23194,11 @@ var html_inline = function html_inline(state, silent) {
   state.pos += match[0].length;
   return true;
 };
+
+// Process html entity - &#123;, &#xAF;, &quot;, ...
+
+
+
 
 let has               = utils$1.has;
 let isValidEntityCode = utils$1.isValidEntityCode;
@@ -23049,6 +23245,8 @@ var entity = function entity(state, silent) {
 };
 
 // For each opening emphasis-like marker find a matching closing one
+//
+
 
 
 function processDelimiters(state, delimiters) {
@@ -23156,6 +23354,14 @@ var balance_pairs = function link_pairs(state) {
 };
 
 // Clean up tokens after emphasis and strikethrough postprocessing:
+// merge adjacent text nodes into one and re-calculate all token levels
+//
+// This is necessary because initially emphasis delimiter markers (*, _, ~)
+// are treated as their own separate text tokens. Then emphasis rule either
+// leaves them as text (needed to merge with adjacent text) or turns them
+// into opening/closing tags (which messes up levels inside).
+//
+
 
 
 var text_collapse = function text_collapse(state) {
@@ -23195,6 +23401,12 @@ var text_collapse = function text_collapse(state) {
     tokens.length = last;
   }
 };
+
+// Inline parser state
+
+
+
+
 
 let isWhiteSpace$1   = utils$1.isWhiteSpace;
 let isPunctChar$1    = utils$1.isPunctChar;
@@ -23346,6 +23558,17 @@ StateInline.prototype.Token = token;
 
 
 var state_inline = StateInline;
+
+/** internal
+ * class ParserInline
+ *
+ * Tokenizes paragraph content.
+ **/
+
+
+
+
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // Parser rules
@@ -24791,6 +25014,8 @@ const punycode = {
 // markdown-it default options
 
 
+
+
 var _default = {
   options: {
     html:         false,        // Enable HTML tags in source
@@ -24829,11 +25054,22 @@ var _default = {
     //
     highlight: null,
 
-    maxNesting:   100            // Internal protection, recursion limit
+    // A regex which matches *additional* characters in an inline text string which may serve
+    // as the start of a special word, i.e. the start of anything that might be matched
+    // by a markdown-it parse rule / plugin.
+    //
+    // Using this option will slow markdown-it, hence you should only use it when you need it,
+    // e.g. when writing custom plugins which are not looking for words which start with one
+    // of the default set of sentinel characters as specified in rules_inline/text.js:
+    //
+    // !, ", #, $, %, &, ', (, ), *, +, ,, -, ., /, :, ;, <, =, >, ?, @, [, \, ], ^, _, `, {, |, }, or ~
+    inlineTokenTerminatorsRe: null,
+
+    // Internal protection, recursion limit
+    maxNesting: 100
   },
 
   components: {
-
     core: {},
     block: {},
     inline: {}
@@ -24841,6 +25077,9 @@ var _default = {
 };
 
 // "Zero" preset, with nothing enabled. Useful for manual configuring of simple
+// modes. For example, to parse bold/italic only.
+
+
 
 
 var zero = {
@@ -24881,11 +25120,22 @@ var zero = {
     //
     highlight: null,
 
-    maxNesting:   20            // Internal protection, recursion limit
+    // A regex which matches *additional* characters in an inline text string which may serve
+    // as the start of a special word, i.e. the start of anything that might be matched
+    // by a markdown-it parse rule / plugin.
+    //
+    // Using this option will slow markdown-it, hence you should only use it when you need it,
+    // e.g. when writing custom plugins which are not looking for words which start with one
+    // of the default set of sentinel characters as specified in rules_inline/text.js:
+    //
+    // !, ", #, $, %, &, ', (, ), *, +, ,, -, ., /, :, ;, <, =, >, ?, @, [, \, ], ^, _, `, {, |, }, or ~
+    inlineTokenTerminatorsRe: null,
+
+    // Internal protection, recursion limit
+    maxNesting: 20
   },
 
   components: {
-
     core: {
       rules: [
         'normalize',
@@ -24913,6 +25163,8 @@ var zero = {
 };
 
 // Commonmark default options
+
+
 
 
 var commonmark = {
@@ -24953,11 +25205,22 @@ var commonmark = {
     //
     highlight: null,
 
-    maxNesting:   20            // Internal protection, recursion limit
+    // A regex which matches *additional* characters in an inline text string which may serve
+    // as the start of a special word, i.e. the start of anything that might be matched
+    // by a markdown-it parse rule / plugin.
+    //
+    // Using this option will slow markdown-it, hence you should only use it when you need it,
+    // e.g. when writing custom plugins which are not looking for words which start with one
+    // of the default set of sentinel characters as specified in rules_inline/text.js:
+    //
+    // !, ", #, $, %, &, ', (, ), *, +, ,, -, ., /, :, ;, <, =, >, ?, @, [, \, ], ^, _, `, {, |, }, or ~
+    inlineTokenTerminatorsRe: null,
+
+    // Internal protection, recursion limit
+    maxNesting: 20
   },
 
   components: {
-
     core: {
       rules: [
         'normalize',
@@ -25002,6 +25265,22 @@ var commonmark = {
     }
   }
 };
+
+// Main parser class
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 let config$1 = {
   'default': _default,
@@ -26333,74 +26612,81 @@ function last$1(arr) {
 
 // [[kbd]]
 //
-const MARKER_OPEN = '[';
-const MARKER_CLOSE = ']';
-const TAG = 'kbd';
-/*
- * Add delimiters for double occurrences of MARKER_SYMBOL.
- */
+let options = {
+  MARKER_OPEN: '[[',
+  MARKER_CLOSE: ']]',
+  TAG: 'kbd',
+  // intern use; derived at time of initialization:
+  MARKER_OPEN_1ST_CHR: 0
+};
 
 function tokenize$3(state, silent) {
   if (silent) {
     return false;
   }
 
-  const start = state.pos;
+  let start = state.pos;
   const max = state.posMax;
-  let momChar = state.src.charAt(start);
-  let nextChar = state.src.charAt(start + 1); // we're looking for two times the open symbol.
+  let momChar = state.src.charCodeAt(start); // we're looking for two times the open symbol.
 
-  if (momChar !== MARKER_OPEN || nextChar !== MARKER_OPEN) {
+  if (momChar !== options.MARKER_OPEN_1ST_CHR) {
     return false;
-  } // find the end sequence
+  }
 
+  let src = state.src.slice(start);
 
-  let end = -1;
-  nextChar = state.src.charAt(start + 2);
-
-  for (let i = start + 2; i < max && end === -1; i++) {
-    momChar = nextChar;
-    nextChar = state.src.charAt(i + 1);
-
-    if (momChar === MARKER_CLOSE && nextChar === MARKER_CLOSE) {
-      // found the end!
-      end = i;
-    }
-
-    if (momChar === MARKER_OPEN && momChar === MARKER_OPEN) {
-      // found another opening sequence before the end. Thus, ignore ours!
-      return false;
-    }
-
-    if (momChar === '\n') {
-      // found end of line before the end sequence. Thus, ignore our start sequence!
-      return false;
-    }
-  } // input ended before closing sequence
-
-
-  if (end === -1) {
+  if (!src.startsWith(options.MARKER_OPEN)) {
     return false;
-  } // start tag
+  }
+
+  const startLen = options.MARKER_OPEN.length;
+  start += startLen;
+  src = src.slice(startLen); // find the end sequence
+
+  let end = src.indexOf(options.MARKER_CLOSE);
+
+  if (end < 0) {
+    // no end marker found,
+    // input ended before closing sequence
+    return false;
+  }
+
+  let lf = src.indexOf('\n');
+
+  if (lf >= 0 && lf < end) {
+    // found end of line before the end sequence. Thus, ignore our start sequence!
+    return false;
+  }
+
+  let second = src.indexOf(options.MARKER_OPEN);
+
+  if (second >= 0 && second < end) {
+    // found another opening sequence before the end. Thus, ignore ours!
+    return false;
+  } // make end position into absolute index
 
 
-  state.push('kbd_open', TAG, 1); // parse inner
+  end += start; // start tag
 
-  state.pos += 2;
+  state.push('kbd_open', options.TAG, 1); // parse inner
+
+  state.pos = start;
   state.posMax = end;
   state.md.inline.tokenize(state);
-  state.pos = end + 2;
+  state.pos = end + options.MARKER_CLOSE.length;
   state.posMax = max; // end tag
 
-  state.push('kbd_close', TAG, -1);
+  state.push('kbd_close', options.TAG, -1);
   return true;
 }
 
-function kbdplugin(markdownit) {
+function kbdplugin(markdownit, opts) {
+  options = Object.assign(options, opts);
+  options.MARKER_OPEN_1ST_CHR = options.MARKER_OPEN.charCodeAt(0);
   markdownit.inline.ruler.before('link', 'kbd', tokenize$3);
 }
 
-/* eslint-env mocha */
+/* eslint-env mocha, es6 */
 const expect$1 = chai$2.expect;
 chai$2.use(chaiString);
 

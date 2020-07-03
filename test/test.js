@@ -1,4 +1,5 @@
-/* eslint-env mocha */
+
+/* eslint-env mocha, es6 */
 
 import chai from 'chai';
 const expect = chai.expect;
