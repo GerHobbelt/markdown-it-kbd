@@ -1,67 +1,74 @@
 // [[kbd]]
 //
 
-const MARKER_OPEN = '[';
-const MARKER_CLOSE = ']';
-const TAG = 'kbd';
+let options = {
+  MARKER_OPEN: '[[',
+  MARKER_CLOSE: ']]',
+  TAG: 'kbd',
 
-/*
- * Add delimiters for double occurrences of MARKER_SYMBOL.
- */
+  // intern use; derived at time of initialization:
+  MARKER_OPEN_1ST_CHR: 0
+};
+
 function tokenize(state, silent) {
   if (silent) {
     return false;
   }
 
-  const start = state.pos;
+  let start = state.pos;
   const max = state.posMax;
-  let momChar = state.src.charAt(start);
-  let nextChar = state.src.charAt(start + 1);
+  let momChar = state.src.charCodeAt(start);
 
-	// we're looking for two times the open symbol.
-  if (momChar !== MARKER_OPEN || nextChar !== MARKER_OPEN) {
+  // we're looking for two times the open symbol.
+  if (momChar !== options.MARKER_OPEN_1ST_CHR) {
+    return false;
+  }
+  let src = state.src.slice(start);
+  if (!src.startsWith(options.MARKER_OPEN)) {
+    return false;
+  }
+  const startLen = options.MARKER_OPEN.length;
+  start += startLen;
+  src = src.slice(startLen);
+
+  // find the end sequence
+  let end = src.indexOf(options.MARKER_CLOSE);
+  if (end < 0) {
+    // no end marker found,
+    // input ended before closing sequence
+    return false;
+  }
+  let lf = src.indexOf('\n');
+  if (lf >= 0 && lf < end) {
+    // found end of line before the end sequence. Thus, ignore our start sequence!
+    return false;
+  }
+  let second = src.indexOf(options.MARKER_OPEN);
+  if (second >= 0 && second < end) {
+    // found another opening sequence before the end. Thus, ignore ours!
     return false;
   }
 
-	// find the end sequence
-  let end = -1;
-  nextChar = state.src.charAt(start + 2);
-  for (let i = start + 2; i < max && end === -1; i++) {
-    momChar = nextChar;
-    nextChar = state.src.charAt(i + 1);
-    if (momChar === MARKER_CLOSE && nextChar === MARKER_CLOSE) {
-			// found the end!
-      end = i;
-    }
-    if (momChar === MARKER_OPEN && momChar === MARKER_OPEN) {
-			// found another opening sequence before the end. Thus, ignore ours!
-      return false;
-    }
-    if (momChar === '\n') {
-			// found end of line before the end sequence. Thus, ignore our start sequence!
-      return false;
-    }
-  }
+  // make end position into absolute index
+  end += start;
 
-	// input ended before closing sequence
-  if (end === -1) {
-    return false;
-  }
-
-	// start tag
-  state.push('kbd_open', TAG, 1);
-	// parse inner
-  state.pos += 2;
+  // start tag
+  state.push('kbd_open', options.TAG, 1);
+  // parse inner
+  state.pos = start;
   state.posMax = end;
   state.md.inline.tokenize(state);
-  state.pos = end + 2;
+  state.pos = end + options.MARKER_CLOSE.length;
   state.posMax = max;
-	// end tag
-  state.push('kbd_close', TAG, -1);
+  // end tag
+  state.push('kbd_close', options.TAG, -1);
 
   return true;
 }
 
-export default function kbdplugin(markdownit) {
+export default function kbdplugin(markdownit, opts) {
+  options = Object.assign(options, opts);
+  options.MARKER_OPEN_1ST_CHR = options.MARKER_OPEN.charCodeAt(0);
+
   markdownit.inline.ruler.before('link', 'kbd', tokenize);
 }
