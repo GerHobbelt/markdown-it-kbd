@@ -26610,56 +26610,31 @@ function last$1(arr) {
   return arr.slice(-1)[0] || {};
 } //module.exports = attributes;
 
-/*! markdown-it-wikilinks 1.1.1-4 https://github.com//GerHobbelt/markdown-it-wikilinks @license MIT */
+/*! markdown-it-wikilinks 1.1.1-7 https://github.com//GerHobbelt/markdown-it-wikilinks @license MIT */
 
-const plugin = require('@gerhobbelt/markdown-it-regexp');
-
-const extend = require('extend');
+const createPlugin = require('@gerhobbelt/markdown-it-regexp');
 
 const sanitize = require('sanitize-filename');
 
-module.exports = options => {
-  const defaults = {
-    linkPattern: /\[\[([^|]+?)(\|([\s\S]+?))?\]\]/,
-    // accept anything, except ] or |
-    //linkPattern: /\[\[([-\w\s\/]+)(\|([-\w\s\/]+))?\]\]/,  // accept words, dashes and whitespace
-    baseURL: '/',
-    relativeBaseURL: './',
-    makeAllLinksAbsolute: false,
-    uriSuffix: '.html',
-    htmlAttributes: {},
-    generatePageNameFromLabel: label => {
-      return label;
-    },
-    postProcessPageName: pageName => {
-      pageName = pageName.trim();
-      pageName = pageName.split('/').map(sanitize).join('/');
-      pageName = pageName.replace(/\s+/g, '_');
-      return pageName;
-    },
-    postProcessLabel: label => {
-      label = label.trim();
-      return label;
-    }
-  };
-  options = extend(true, defaults, options);
+function removeInitialSlashes(str) {
+  return str.replace(/^\/+/g, '');
+} // separate the setup/config object from the `md.use(...)` call for code clarity:
 
-  function isAbsolute(pageName) {
-    return options.makeAllLinksAbsolute || pageName.charCodeAt(0) === 0x2F;
-    /* / */
-  }
 
-  function removeInitialSlashes(str) {
-    return str.replace(/^\/+/g, '');
-  }
-
-  return plugin(options.linkPattern, (match, utils) => {
+const defaultSetup = {
+  pluginId: 'wikilink',
+  replacer: function (match, setup, options, env, tokens, id) {
     let label = '';
     let pageName = '';
     let href = '';
     let htmlAttrs = [];
     let htmlAttrsString = '';
-    const isSplit = !!match[3];
+    const isSplit = !!match[2];
+
+    function isAbsolute(pageName) {
+      return options.makeAllLinksAbsolute || pageName.charCodeAt(0) === 0x2F;
+      /* / */
+    }
 
     if (isSplit) {
       label = match[3];
@@ -26683,18 +26658,61 @@ module.exports = options => {
       href = options.relativeBaseURL + pageName + options.uriSuffix;
     }
 
-    href = utils.escape(href);
+    href = setup.escape(href);
     htmlAttrs.push(`href="${href}"`);
 
     for (let attrName in options.htmlAttributes) {
       const attrValue = options.htmlAttributes[attrName];
-      htmlAttrs.push(`${attrName}="${attrValue}"`);
+      htmlAttrs.push(`${attrName}="${setup.encodeHtmlAttr(attrValue)}"`);
     }
 
     htmlAttrsString = htmlAttrs.join(' ');
-    return `<a ${htmlAttrsString}>${label}</a>`;
-  }, 'wikilink' // custom ID for the token stream
-  );
+    return `<a ${htmlAttrsString}>${label}</a>`; // - showcase using the `options` passed in via `MarkdownIt.use()`
+    // - showcase using the `setup` object
+    // - showcase using the `tokens` stream + `id` index to access the token
+    // return '\n' + setup.pluginId + ':' + options.opt1 + ':' + setup.escape(url) + ':' + options.opt2 + ':' + (token.wonko || '---') + ':' + token.type + ':' + token.nesting + ':' + token.level;
+  },
+  setup: function (config, options) {
+    const defaults = {
+      linkPattern: /\[\[([^\x00-\x1f|]+?)(\|([\s\S]+?))?\]\]/,
+      // accept anything, except control characters (CR, LF, etc) or |
+      // linkPattern: /\[\[([-\w\s\/]+)(\|([-\w\s\/]+))?\]\]/,  // accept words, dashes and whitespace
+      baseURL: '/',
+      relativeBaseURL: './',
+      makeAllLinksAbsolute: false,
+      uriSuffix: '.html',
+      htmlAttributes: {},
+      generatePageNameFromLabel: label => {
+        return label;
+      },
+      postProcessPageName: pageName => {
+        pageName = pageName.trim();
+        pageName = pageName.split('/').map(sanitize).join('/');
+        pageName = pageName.replace(/\s+/g, '_');
+        return pageName;
+      },
+      postProcessLabel: label => {
+        label = label.trim();
+        return label;
+      }
+    };
+    options = Object.assign({}, defaults, options); // override the regexp used for token matching:
+
+    if (options.linkPattern) {
+      config.regexp = options.linkPattern;
+    }
+
+    return options;
+  }
+};
+const plugin = createPlugin( // regexp to match: fake one. Will be set up by setup callback instead.
+/./, Object.assign({}, defaultSetup)); // only use this for test rigs:
+
+plugin.createTestInstance = function (setup) {
+  createPlugin.reset();
+  const p = createPlugin( // regexp to match: fake one. Will be set up by setup callback instead.
+  /./, Object.assign({}, defaultSetup));
+  return p;
 };
 
 // [[kbd]]
@@ -26798,8 +26816,9 @@ describe('markdown-it-kbd', () => {
     expect$1(mdwithattrs.render(read('input/withattrs.md'))).to.equalIgnoreSpaces(read('expected/withattrs.html'));
   });
   it('can use alternative markers [=x=] to prevent collision with wikilinks plugin', () => {
-    const md = markdownIt() //.use(markdownItWikiLinks, { baseURL: '/wiki/' })
-    .use(kbdplugin, {
+    const md = markdownIt().use(plugin, {
+      baseURL: '/wiki/'
+    }).use(kbdplugin, {
       MARKER_OPEN: '[=',
       MARKER_CLOSE: '=]'
     });

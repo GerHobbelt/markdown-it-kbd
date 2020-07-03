@@ -6,7 +6,7 @@ const expect = chai.expect;
 import chaiString from 'chai-string';
 import markdownit from '@gerhobbelt/markdown-it';
 import markdownItAttrs from '@gerhobbelt/markdown-it-attrs';
-import * as markdownItWikiLinks from '@gerhobbelt/markdown-it-wikilinks';
+import markdownItWikiLinks from '@gerhobbelt/markdown-it-wikilinks';
 import markdownItKbd from '../';
 import fs from 'fs';
 
@@ -49,7 +49,9 @@ describe('markdown-it-kbd', () => {
 
   it('can use alternative markers [=x=] to prevent collision with wikilinks plugin', () => {
     const md = markdownit()
-    //.use(markdownItWikiLinks, { baseURL: '/wiki/' })
+    .use(markdownItWikiLinks, {
+      baseURL: '/wiki/'
+    })
     .use(markdownItKbd, {
       MARKER_OPEN: '[=',
       MARKER_CLOSE: '=]'
