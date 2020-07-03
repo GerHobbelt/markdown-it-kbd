@@ -26610,6 +26610,93 @@ function last$1(arr) {
   return arr.slice(-1)[0] || {};
 } //module.exports = attributes;
 
+/*! markdown-it-wikilinks 1.1.1-4 https://github.com//GerHobbelt/markdown-it-wikilinks @license MIT */
+
+const plugin = require('@gerhobbelt/markdown-it-regexp');
+
+const extend = require('extend');
+
+const sanitize = require('sanitize-filename');
+
+module.exports = options => {
+  const defaults = {
+    linkPattern: /\[\[([^|]+?)(\|([\s\S]+?))?\]\]/,
+    // accept anything, except ] or |
+    //linkPattern: /\[\[([-\w\s\/]+)(\|([-\w\s\/]+))?\]\]/,  // accept words, dashes and whitespace
+    baseURL: '/',
+    relativeBaseURL: './',
+    makeAllLinksAbsolute: false,
+    uriSuffix: '.html',
+    htmlAttributes: {},
+    generatePageNameFromLabel: label => {
+      return label;
+    },
+    postProcessPageName: pageName => {
+      pageName = pageName.trim();
+      pageName = pageName.split('/').map(sanitize).join('/');
+      pageName = pageName.replace(/\s+/g, '_');
+      return pageName;
+    },
+    postProcessLabel: label => {
+      label = label.trim();
+      return label;
+    }
+  };
+  options = extend(true, defaults, options);
+
+  function isAbsolute(pageName) {
+    return options.makeAllLinksAbsolute || pageName.charCodeAt(0) === 0x2F;
+    /* / */
+  }
+
+  function removeInitialSlashes(str) {
+    return str.replace(/^\/+/g, '');
+  }
+
+  return plugin(options.linkPattern, (match, utils) => {
+    let label = '';
+    let pageName = '';
+    let href = '';
+    let htmlAttrs = [];
+    let htmlAttrsString = '';
+    const isSplit = !!match[3];
+
+    if (isSplit) {
+      label = match[3];
+      pageName = match[1];
+    } else {
+      label = match[1];
+      pageName = options.generatePageNameFromLabel(label);
+    }
+
+    label = options.postProcessLabel(label);
+    pageName = options.postProcessPageName(pageName); // make sure none of the values are empty
+
+    if (!label || !pageName) {
+      return match.input;
+    }
+
+    if (isAbsolute(pageName)) {
+      pageName = removeInitialSlashes(pageName);
+      href = options.baseURL + pageName + options.uriSuffix;
+    } else {
+      href = options.relativeBaseURL + pageName + options.uriSuffix;
+    }
+
+    href = utils.escape(href);
+    htmlAttrs.push(`href="${href}"`);
+
+    for (let attrName in options.htmlAttributes) {
+      const attrValue = options.htmlAttributes[attrName];
+      htmlAttrs.push(`${attrName}="${attrValue}"`);
+    }
+
+    htmlAttrsString = htmlAttrs.join(' ');
+    return `<a ${htmlAttrsString}>${label}</a>`;
+  }, 'wikilink' // custom ID for the token stream
+  );
+};
+
 // [[kbd]]
 //
 let options = {
@@ -26709,5 +26796,13 @@ describe('markdown-it-kbd', () => {
   it('can be used together with markdown-it-attrs', () => {
     const mdwithattrs = markdownIt().use(kbdplugin).use(attributes);
     expect$1(mdwithattrs.render(read('input/withattrs.md'))).to.equalIgnoreSpaces(read('expected/withattrs.html'));
+  });
+  it('can use alternative markers [=x=] to prevent collision with wikilinks plugin', () => {
+    const md = markdownIt() //.use(markdownItWikiLinks, { baseURL: '/wiki/' })
+    .use(kbdplugin, {
+      MARKER_OPEN: '[=',
+      MARKER_CLOSE: '=]'
+    });
+    expect$1(md.render(read('input/kbd_alt.md'))).to.equalIgnoreSpaces(read('expected/kbd_alt.html'));
   });
 });
