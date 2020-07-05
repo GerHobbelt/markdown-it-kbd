@@ -20254,6 +20254,7 @@ var table = function table(state, startLine, endLine, silent) {
 
     token          = state.push('th_close', 'th', -1);
     token.position = columnVIndex;
+    token.size     = 0;
 
     // Last column?
     if (i === (columns.length - 1)) {
@@ -20314,6 +20315,7 @@ var table = function table(state, startLine, endLine, silent) {
 
       token          = state.push('td_close', 'td', -1);
       token.position = columnVIndex;
+      token.size     = 0;
 
       // Last column?
       if (i === (columns.length - 1)) {
@@ -20491,6 +20493,7 @@ var blockquote = function blockquote(state, startLine, endLine, silent) {
       ch,
       i,
       initial,
+      blockStart,
       l,
       lastLineEmpty,
       lines,
@@ -20520,6 +20523,9 @@ var blockquote = function blockquote(state, startLine, endLine, silent) {
   // we know that it's going to be a valid blockquote,
   // so no point trying to find the end of it in silent mode
   if (silent) { return true; }
+
+  // store position for token position/size later on
+  blockStart = pos;
 
   // skip spaces after ">" and re-calculate offset
   initial = offset = state.sCount[startLine] + pos - (state.bMarks[startLine] + state.tShift[startLine]);
@@ -20742,11 +20748,15 @@ var blockquote = function blockquote(state, startLine, endLine, silent) {
   token        = state.push('blockquote_open', 'blockquote', 1);
   token.markup = '>';
   token.map    = lines = [ startLine, 0 ];
+  token.position = blockStart;
+  token.size = pos - blockStart;
 
   state.md.block.tokenize(state, startLine, nextLine);
 
   token        = state.push('blockquote_close', 'blockquote', -1);
   token.markup = '>';
+  token.position = pos;
+  token.size = 0;
 
   state.lineMax = oldLineMax;
   state.parentType = oldParentType;
@@ -20939,6 +20949,7 @@ var list = function list(state, startLine, endLine, silent) {
       posAfterMarker,
       prevEmptyEnd,
       start,
+      blockStart = state.pos,
       terminate,
       terminatorRules,
       token,
@@ -21010,14 +21021,13 @@ var list = function list(state, startLine, endLine, silent) {
     if (markerValue !== 1) {
       token.attrs = [ [ 'start', markerValue ] ];
     }
-
   } else {
     token       = state.push('bullet_list_open', 'ul', 1);
   }
 
   token.map    = listLines = [ startLine, 0 ];
   token.markup = String.fromCharCode(markerCharCode);
-  token.position = start;
+  token.position = blockStart;
   token.size   = 0;
 
   //
@@ -21073,6 +21083,7 @@ var list = function list(state, startLine, endLine, silent) {
     token.markup = String.fromCharCode(markerCharCode);
     token.map    = itemLines = [ startLine, 0 ];
     token.position = contentStart;
+    token.size = 0;
 
     // change current state, then restore it after parser subcall
     oldTight = state.tight;
@@ -21120,6 +21131,8 @@ var list = function list(state, startLine, endLine, silent) {
 
     token        = state.push('list_item_close', 'li', -1);
     token.markup = String.fromCharCode(markerCharCode);
+    token.position = state.pos;
+    token.size = 0;
 
     nextLine = startLine = state.line;
     itemLines[1] = nextLine;
@@ -21164,6 +21177,8 @@ var list = function list(state, startLine, endLine, silent) {
     token = state.push('bullet_list_close', 'ul', -1);
   }
   token.markup = String.fromCharCode(markerCharCode);
+  token.position = state.pos;
+  token.size = 0;
 
   listLines[1] = nextLine;
   state.line = nextLine;
@@ -21660,6 +21675,7 @@ let HTML_SEQUENCES = [
 
 var html_block = function html_block(state, startLine, endLine, silent) {
   let i, nextLine, token, lineText,
+      blockStart = state.pos,
       pos = state.bMarks[startLine] + state.tShift[startLine],
       max = state.eMarks[startLine];
 
@@ -21707,6 +21723,8 @@ var html_block = function html_block(state, startLine, endLine, silent) {
   token         = state.push('html_block', '', 0);
   token.map     = [ startLine, nextLine ];
   token.content = state.getLines(startLine, nextLine, state.blkIndent, true);
+  token.position = blockStart;
+  token.size = state.pos - blockStart;
 
   return true;
 };
@@ -22170,6 +22188,7 @@ var tokenize = function linkify(state, silent) {
     token.attrs   = [ [ 'href', fullUrl ] ];
     token.markup  = 'linkify';
     token.info    = 'auto';
+    // TODO: position + size
 
     token         = state.push('text', '', 0);
     token.content = urlText;
@@ -22177,6 +22196,8 @@ var tokenize = function linkify(state, silent) {
     token         = state.push('link_close', 'a', -1);
     token.markup  = 'linkify';
     token.info    = 'auto';
+    token.position = link.lastIndex;
+    token.size = 0;
   }
 
   state.pos = link.lastIndex;
@@ -22324,7 +22345,7 @@ var text = function text(state, silent) {
   return true;
 };
 
-// Proceess '\n'
+// Process '\n'
 
 
 
@@ -22344,17 +22365,20 @@ var newline = function newline(state, silent) {
   // Pending string is stored in concat mode, indexed lookups will cause
   // convertion to flat mode.
   if (!silent) {
+    let token;
     if (pmax >= 0 && state.pending.charCodeAt(pmax) === 0x20) {
       if (pmax >= 1 && state.pending.charCodeAt(pmax - 1) === 0x20) {
         state.pending = state.pending.replace(/ +$/, '');
-        state.push('hardbreak', 'br', 0);
+        token = state.push('hardbreak', 'br', 0);
       } else {
         state.pending = state.pending.slice(0, -1);
-        state.push('softbreak', 'br', 0);
+        token = state.push('softbreak', 'br', 0);
       }
     } else {
-      state.push('softbreak', 'br', 0);
+      token = state.push('softbreak', 'br', 0);
     }
+    token.position = pos;
+    token.size = 1;
   }
 
   pos++;
@@ -22398,7 +22422,9 @@ var _escape = function escape(state, silent) {
 
     if (ch === 0x0A) {
       if (!silent) {
-        state.push('hardbreak', 'br', 0);
+        let token = state.push('hardbreak', 'br', 0);
+        token.position = pos;
+        token.size = 1;
       }
 
       pos++;
@@ -22475,7 +22501,7 @@ let getLineOffset  = utils$1.getLineOffset;
 // Insert each marker as a separate text token, and add it to delimiter list
 //
 var tokenize$1 = function strikethrough(state, silent) {
-  let i, scanned, token, len, ch,
+  let i, scanned, token, len, ch, offset,
       start = state.pos,
       marker = state.src.charCodeAt(start);
 
@@ -22489,15 +22515,21 @@ var tokenize$1 = function strikethrough(state, silent) {
 
   if (len < 2) { return false; }
 
+  offset = 0;
   if (len % 2) {
     token         = state.push('text', '', 0);
     token.content = ch;
+    token.position = start;
+    token.size = 1;
+    offset = 1;
     len--;
   }
 
   for (i = 0; i < len; i += 2) {
     token         = state.push('text', '', 0);
     token.content = ch + ch;
+    token.position = start + i + offset;
+    token.size = 2;
 
     state.delimiters.push({
       marker: marker,
@@ -22629,6 +22661,8 @@ var tokenize$2 = function emphasis(state, silent) {
   for (i = 0; i < scanned.length; i++) {
     token         = state.push('text', '', 0);
     token.content = String.fromCharCode(marker);
+    token.position = state.pos;
+    token.size = token.content.length;
 
     state.delimiters.push({
       position: state.pos,
@@ -22890,6 +22924,8 @@ var link = function link(state, silent) {
     state.posMax = labelEnd;
 
     token        = state.push('link_open', 'a', 1);
+    token.position = labelStart - 1;
+    token.size = pos - token.position;
     token.attrs  = attrs = [ [ 'href', href ] ];
     if (title) {
       attrs.push([ 'title', title ]);
@@ -22898,6 +22934,8 @@ var link = function link(state, silent) {
     state.md.inline.tokenize(state, labelStart);
 
     token        = state.push('link_close', 'a', -1);
+    token.position = pos;
+    token.size = 0;
   }
 
   state.pos = pos;
@@ -23093,6 +23131,7 @@ var autolink = function autolink(state, silent) {
   if (AUTOLINK_RE.test(tail)) {
     linkMatch = tail.match(AUTOLINK_RE);
 
+    let matchLen = linkMatch[0].length;
     url = linkMatch[0].slice(1, -1);
     fullUrl = state.md.normalizeLink(url);
     if (!state.md.validateLink(fullUrl)) { return false; }
@@ -23102,6 +23141,8 @@ var autolink = function autolink(state, silent) {
       token.attrs   = [ [ 'href', fullUrl ] ];
       token.markup  = 'autolink';
       token.info    = 'auto';
+      token.position = pos;
+      token.size = matchLen;
 
       token         = state.push('text', '', 0);
       token.content = state.md.normalizeLinkText(url);
@@ -23111,15 +23152,18 @@ var autolink = function autolink(state, silent) {
       token         = state.push('link_close', 'a', -1);
       token.markup  = 'autolink';
       token.info    = 'auto';
+      token.position = pos + matchLen;
+      token.size = 0;
     }
 
-    state.pos += linkMatch[0].length;
+    state.pos += matchLen;
     return true;
   }
 
   if (EMAIL_RE.test(tail)) {
     emailMatch = tail.match(EMAIL_RE);
 
+    let matchLen = emailMatch[0].length;
     url = emailMatch[0].slice(1, -1);
     fullUrl = state.md.normalizeLink('mailto:' + url);
     if (!state.md.validateLink(fullUrl)) { return false; }
@@ -23129,6 +23173,8 @@ var autolink = function autolink(state, silent) {
       token.attrs   = [ [ 'href', fullUrl ] ];
       token.markup  = 'autolink';
       token.info    = 'auto';
+      token.position = pos;
+      token.size = matchLen;
 
       token         = state.push('text', '', 0);
       token.content = state.md.normalizeLinkText(url);
@@ -23138,9 +23184,11 @@ var autolink = function autolink(state, silent) {
       token         = state.push('link_close', 'a', -1);
       token.markup  = 'autolink';
       token.info    = 'auto';
+      token.position = pos + matchLen;
+      token.size = 0;
     }
 
-    state.pos += emailMatch[0].length;
+    state.pos += matchLen;
     return true;
   }
 
@@ -23190,6 +23238,8 @@ var html_inline = function html_inline(state, silent) {
   if (!silent) {
     token         = state.push('html_inline', '', 0);
     token.content = state.src.slice(pos, pos + match[0].length);
+    token.position = state.pos;
+    token.size = match[0].length;
   }
   state.pos += match[0].length;
   return true;
@@ -25863,7 +25913,7 @@ var lib = MarkdownIt;
 
 var markdownIt = lib;
 
-/*! markdown-it-attrs 3.0.3-18 https://github.com//GerHobbelt/markdown-it-attrs @license MIT */
+/*! markdown-it-attrs 3.0.3-19 https://github.com//GerHobbelt/markdown-it-attrs @license MIT */
 
 /**
  * parse {.class #id key=val} strings
