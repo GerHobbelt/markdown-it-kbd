@@ -1,6 +1,6 @@
 {
   "name": "@gerhobbelt/markdown-it-kbd",
-  "version": "2.0.0-7",
+  "version": "2.1.0-7",
   "description": "Markdown-it syntax add-on for keystrokes. Renders [[x]] as <kbd>x</kbd>",
   "keywords": [
     "markdown-it-plugin",
@@ -19,24 +19,36 @@
   "source": "index.js",
   "main": "dist/markdownItKbd.js",
   "module": "dist/markdownItKbd.mjs",
+  "types": "dist/markdownItKbd.d.ts",
   "engines": {
     "node": ">=10"
   },
   "scripts": {
     "build": "make",
+    "build:transpile": "babel ./src --out-dir build --extensions '.ts'",
+    "build:types": "tsc",
     "test": "make test",
+    "unittest": "jest",
     "todo": "make todo",
     "clean": "make clean",
     "superclean": "make superclean",
     "doc": "make doc",
     "lint": "make lint",
     "lintfix": "make lintfix",
+    "lint:types": "tsc",
+    "lint:commits": "commitlint --from=semantic-commit-start --to=HEAD",
     "cov": "make report-coverage",
     "pub": "npm publish --access public"
   },
   "devDependencies": {
+    "@babel/cli": "7.10.4",
+    "@babel/core": "7.10.4",
+    "@babel/preset-env": "7.10.4",
+    "@babel/preset-typescript": "^7.10.4",
     "@commitlint/cli": "9.0.1",
     "@commitlint/config-conventional": "9.0.1",
+
+
     "@gerhobbelt/markdown-it": "11.0.1-42",
     "@gerhobbelt/markdown-it-attrs": "3.0.3-19",
     "@gerhobbelt/markdown-it-testgen": "0.1.6-9",
@@ -44,15 +56,18 @@
     "@gerhobbelt/prepend-header": "1.0.8-3",
     "@semantic-release/changelog": "5.0.1",
     "@semantic-release/git": "9.0.0",
-    "camelcase": "6.0.0",
-    "chai": "4.2.0",
-    "chai-string": "1.5.0",
+    "@types/jest": "^26.0.3",
+    "@types/markdown-it": "^10.0.1",
+    "@typescript-eslint/eslint-plugin": "^3.5.0",
+    "@typescript-eslint/parser": "^3.5.0",
     "cross-env": "7.0.2",
-    "eslint": "7.4.0",
+    "eslint": "^7.4.0",
+    "jest": "^26.1.0",
     "microbundle": "0.12.2",
     "mocha": "8.0.1",
     "nyc": "15.1.0",
-    "semantic-release": "17.1.1"
+    "semantic-release": "17.1.1",
+    "typescript": "^3.9.6"
   },
   "commitlint": {
     "extends": [

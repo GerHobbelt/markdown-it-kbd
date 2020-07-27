@@ -1,5 +1,7 @@
 // [[kbd]]
 //
+import MarkdownIt from 'markdown-it'
+import StateInline from 'markdown-it/lib/rules_inline/state_inline'
 
 let options = {
   MARKER_OPEN: '[[',
@@ -10,7 +12,10 @@ let options = {
   MARKER_OPEN_1ST_CHR: 0
 };
 
-function tokenize(state, silent) {
+/*
+ * Add delimiters for double occurrences of MARKER_SYMBOL.
+ */
+function tokenize(state: StateInline, silent: boolean) {
   if (silent) {
     return false;
   }
@@ -66,7 +71,7 @@ function tokenize(state, silent) {
   return true;
 }
 
-export default function kbdplugin(markdownit, opts) {
+export default function kbdplugin(markdownit: MarkdownIt, opts): void {
   options = Object.assign(options, opts);
   options.MARKER_OPEN_1ST_CHR = options.MARKER_OPEN.charCodeAt(0);
 
