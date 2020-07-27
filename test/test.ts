@@ -5,7 +5,7 @@ import chai from 'chai';
 const expect = chai.expect;
 import chaiString from 'chai-string';
 import markdownit from '@gerhobbelt/markdown-it';
-// @ts-ignore markdown-it-attrs has no types and it’s not worth the effort adding a *.d.ts fileu
+// @ts-ignore markdown-it-attrs has no types and it’s not worth the effort adding a *.d.ts file
 import markdownItAttrs from '@gerhobbelt/markdown-it-attrs';
 import markdownItWikiLinks from '@gerhobbelt/markdown-it-wikilinks';
 import markdownItKbd from '../src';
@@ -14,6 +14,8 @@ import fs from 'fs';
 chai.use(chaiString);
 
 const read = path => fs.readFileSync(`testdata/${path}`).toString();
+
+// TODO: check the tests in the mainline and make sure we have them too!
 
 describe('markdown-it-kbd', () => {
 

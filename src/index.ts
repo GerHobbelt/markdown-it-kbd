@@ -6,6 +6,7 @@ import StateInline from 'markdown-it/lib/rules_inline/state_inline'
 let options = {
   MARKER_OPEN: '[[',
   MARKER_CLOSE: ']]',
+  ESCAPE_CHARACTER: '\\',
   TAG: 'kbd',
 
   // intern use; derived at time of initialization:
@@ -24,7 +25,9 @@ function tokenize(state: StateInline, silent: boolean) {
   const max = state.posMax;
   let momChar = state.src.charCodeAt(start);
 
-  // we're looking for two times the open symbol.
+  // TODO: check for escaped open & close markers (vanilla v2.2.0 only checks for escapes in the END marker, BTW...
+
+  // We are looking for two times the open symbol.
   if (momChar !== options.MARKER_OPEN_1ST_CHR) {
     return false;
   }
