@@ -12,7 +12,7 @@ let options = {
   ESCAPE_CHARACTER: '\\',
   TAG: 'kbd',
 
-	// intern use; derived at time of initialization:
+  // intern use; derived at time of initialization:
   MARKER_OPEN_1ST_CHR: 0
 };
 
@@ -28,9 +28,9 @@ function tokenize(state: StateInline, silent: boolean) {
   const max = state.posMax;
   const momChar = state.src.charCodeAt(start);
 
-	// TODO: check for escaped open & close markers (vanilla v2.2.0 only checks for escapes in the END marker, BTW...
+  // TODO: check for escaped open & close markers (vanilla v2.2.0 only checks for escapes in the END marker, BTW...
 
-	// We are looking for two times the open symbol.
+  // We are looking for two times the open symbol.
   if (momChar !== options.MARKER_OPEN_1ST_CHR) {
     return false;
   }
@@ -42,36 +42,36 @@ function tokenize(state: StateInline, silent: boolean) {
   start += startLen;
   src = src.slice(startLen);
 
-	// find the end sequence
+  // find the end sequence
   let end = src.indexOf(options.MARKER_CLOSE);
   if (end < 0) {
-		// no end marker found,
-		// input ended before closing sequence
+    // no end marker found,
+    // input ended before closing sequence
     return false;
   }
   const lf = src.indexOf('\n');
   if (lf >= 0 && lf < end) {
-		// found end of line before the end sequence. Thus, ignore our start sequence!
+    // found end of line before the end sequence. Thus, ignore our start sequence!
     return false;
   }
   const second = src.indexOf(options.MARKER_OPEN);
   if (second >= 0 && second < end) {
-		// found another opening sequence before the end. Thus, ignore ours!
+    // found another opening sequence before the end. Thus, ignore ours!
     return false;
   }
 
-	// make end position into absolute index
+  // make end position into absolute index
   end += start;
 
-	// start tag
+  // start tag
   state.push('kbd_open', options.TAG, 1);
-	// parse inner
+  // parse inner
   state.pos = start;
   state.posMax = end;
   state.md.inline.tokenize(state);
   state.pos = end + options.MARKER_CLOSE.length;
   state.posMax = max;
-	// end tag
+  // end tag
   state.push('kbd_close', options.TAG, -1);
 
   return true;
