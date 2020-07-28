@@ -1,14 +1,18 @@
-/*! markdown-it-kbd 2.0.0-7 https://github.com//GerHobbelt/markdown-it-kbd @license GPL-3.0 */
+/*! markdown-it-kbd 2.2.0-7 https://github.com//GerHobbelt/markdown-it-kbd @license GPL-3.0 */
 
 // [[kbd]]
 //
 let options = {
   MARKER_OPEN: '[[',
   MARKER_CLOSE: ']]',
+  ESCAPE_CHARACTER: '\\',
   TAG: 'kbd',
   // intern use; derived at time of initialization:
   MARKER_OPEN_1ST_CHR: 0
 };
+/*
+ * Add delimiters for double occurrences of MARKER_SYMBOL.
+ */
 
 function tokenize(state, silent) {
   if (silent) {
@@ -17,7 +21,8 @@ function tokenize(state, silent) {
 
   let start = state.pos;
   const max = state.posMax;
-  let momChar = state.src.charCodeAt(start); // we're looking for two times the open symbol.
+  const momChar = state.src.charCodeAt(start); // TODO: check for escaped open & close markers (vanilla v2.2.0 only checks for escapes in the END marker, BTW...
+  // We are looking for two times the open symbol.
 
   if (momChar !== options.MARKER_OPEN_1ST_CHR) {
     return false;
@@ -41,14 +46,14 @@ function tokenize(state, silent) {
     return false;
   }
 
-  let lf = src.indexOf('\n');
+  const lf = src.indexOf('\n');
 
   if (lf >= 0 && lf < end) {
     // found end of line before the end sequence. Thus, ignore our start sequence!
     return false;
   }
 
-  let second = src.indexOf(options.MARKER_OPEN);
+  const second = src.indexOf(options.MARKER_OPEN);
 
   if (second >= 0 && second < end) {
     // found another opening sequence before the end. Thus, ignore ours!

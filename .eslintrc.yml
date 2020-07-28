@@ -10,8 +10,11 @@ plugins:
 parserOptions:
     sourceType: module
 ignorePatterns:
-    - build/**/*
+    - dist/**/*
 rules:
+    '@typescript-eslint/no-var-requires': 1
+    no-constant-condition: 1
+    no-unexpected-multiline: 1
     indent:
         - error
         - tab
