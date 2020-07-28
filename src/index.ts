@@ -46,22 +46,22 @@ function tokenize(state: StateInline, silent: boolean) {
   for (;;) {
     end = src.indexOf(options.MARKER_CLOSE, searchOffset);
     if (end < 0) {
-    // no end marker found,
-    // input ended before closing sequence
+      // no end marker found,
+      // input ended before closing sequence
       return false;
     }
 
-	// count number of escape characters before marker:
-	// if ODD, then marker is escaped:
+    // count number of escape characters before marker:
+    // if ODD, then marker is escaped:
     let escapeCount = 0;
-  	for (let i = end - 1; i >= 0 && src.charAt(i) === options.ESCAPE_CHARACTER; i--) {
-	  escapeCount++;
-  	}
-    if (escapeCount % 2 === 0) {
-  	  // got a proper end marker now: exit loop
-	  break;
+    for (let i = end - 1; i >= 0 && src.charAt(i) === options.ESCAPE_CHARACTER; i--) {
+    escapeCount++;
     }
-	// skip first character of escaped end marker and try again:
+    if (escapeCount % 2 === 0) {
+      // got a proper end marker now: exit loop
+      break;
+    }
+    // skip first character of escaped end marker and try again:
     searchOffset = end + 1;
   }
 
