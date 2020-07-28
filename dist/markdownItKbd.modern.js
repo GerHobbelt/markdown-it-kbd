@@ -21,8 +21,7 @@ function tokenize(state, silent) {
 
   let start = state.pos;
   const max = state.posMax;
-  const momChar = state.src.charCodeAt(start); // TODO: check for escaped open & close markers (vanilla v2.2.0 only checks for escapes in the END marker, BTW...
-  // We are looking for two times the open symbol.
+  const momChar = state.src.charCodeAt(start); // We are looking for two times the open symbol.
 
   if (momChar !== options.MARKER_OPEN_1ST_CHR) {
     return false;
@@ -38,12 +37,33 @@ function tokenize(state, silent) {
   start += startLen;
   src = src.slice(startLen); // find the end sequence
 
-  let end = src.indexOf(options.MARKER_CLOSE);
+  let end;
+  let searchOffset = 0;
 
-  if (end < 0) {
-    // no end marker found,
-    // input ended before closing sequence
-    return false;
+  for (;;) {
+    end = src.indexOf(options.MARKER_CLOSE, searchOffset);
+
+    if (end < 0) {
+      // no end marker found,
+      // input ended before closing sequence
+      return false;
+    } // count number of escape characters before marker:
+    // if ODD, then marker is escaped:
+
+
+    let escapeCount = 0;
+
+    for (let i = end - 1; i >= 0 && src.charAt(i) === options.ESCAPE_CHARACTER; i--) {
+      escapeCount++;
+    }
+
+    if (escapeCount % 2 === 0) {
+      // got a proper end marker now: exit loop
+      break;
+    } // skip first character of escaped end marker and try again:
+
+
+    searchOffset = end + 1;
   }
 
   const lf = src.indexOf('\n');
