@@ -26,21 +26,18 @@ lintfix:
 bundle:
 	-rm -rf ./dist
 	mkdir dist
-	microbundle --no-compress --target node --strict --name ${GLOBAL_NAME}
-	#microbundle --no-compress --target node --strict --name test           --no-sourcemap --no-pkg-main -f cjs -o test test/test.js
-	#mv test/markdown-it-kbd.js test/test5.js
+	microbundle --no-compress --target node --strict --name ${GLOBAL_NAME} -f modern
+	mv dist/${GLOBAL_NAME}.modern.js dist/${GLOBAL_NAME}.js
+	mv dist/${GLOBAL_NAME}.modern.js.map dist/${GLOBAL_NAME}.js.map
 	npx prepend-header 'dist/*js' support/header.js
 
 test:
 	mocha
-	# kludgy way to execute the tests: `make build` compiles the tests to CommonJS in test5.js, then we execute those instead:
-	#mocha test/test5.js
 
 coverage:
 	-rm -rf coverage
 	-rm -rf .nyc_output
-	#cross-env NODE_ENV=test nyc mocha test/test5.js
-	cross-env NODE_ENV=test nyc mocha 
+	cross-env NODE_ENV=test nyc mocha
 
 report-coverage: lint coverage
 

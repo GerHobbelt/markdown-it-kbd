@@ -1,15 +1,17 @@
 
 /* eslint-env mocha, es6 */
 
-const assert = require('assert');
+import path from 'path';
+import fs from 'fs';
+import assert from 'assert';
 // @ts-ignore markdown-it-attrs has no types and it’s not worth the effort adding a *.d.ts file
-const markdownit = require('@gerhobbelt/markdown-it');
+import markdownit from '@gerhobbelt/markdown-it';
 // @ts-ignore markdown-it-attrs has no types and it’s not worth the effort adding a *.d.ts file
-const markdownItAttrs = require('@gerhobbelt/markdown-it-attrs');
+import markdownItAttrs from '@gerhobbelt/markdown-it-attrs';
 // @ts-ignore markdown-it-wikilinks has no types and it’s not worth the effort adding a *.d.ts file
-const markdownItWikiLinks = require('@gerhobbelt/markdown-it-wikilinks');
-const markdownItKbd = require('../');
-const fs = require('fs');
+import markdownItWikiLinks from '@gerhobbelt/markdown-it-wikilinks';
+import markdownItKbd from '../dist/markdownitKbd.js';
+
 
 const read = (path) => fs.readFileSync(`testdata/${path}`).toString();
 

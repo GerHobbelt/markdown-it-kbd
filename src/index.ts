@@ -55,7 +55,7 @@ function tokenize(state: StateInline, silent: boolean) {
     // if ODD, then marker is escaped:
     let escapeCount = 0;
     for (let i = end - 1; i >= 0 && src.charAt(i) === options.ESCAPE_CHARACTER; i--) {
-    escapeCount++;
+      escapeCount++;
     }
     if (escapeCount % 2 === 0) {
       // got a proper end marker now: exit loop

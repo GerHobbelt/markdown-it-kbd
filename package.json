@@ -19,10 +19,8 @@
   "source": "src/index.ts",
   "types": "dist/index.d.ts",
   "main": "dist/markdownItKbd.js",
-  "umd:main": "dist/markdownItKbd.umd.js",
-  "module": "dist/markdownItKbd.mjs",
   "engines": {
-    "node": ">=10"
+    "node": ">=12.20.0"
   },
   "scripts": {
     "build": "make",
@@ -36,26 +34,30 @@
     "cov": "make report-coverage",
     "pub": "npm publish --access public"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "devDependencies": {
-    "@babel/preset-typescript": "7.10.4",
-    "@gerhobbelt/markdown-it": "11.0.1-43",
-    "@gerhobbelt/markdown-it-attrs": "3.0.3-19",
+    "@babel/preset-typescript": "7.12.7",
+    "@gerhobbelt/markdown-it": "12.0.4-51",
+    "@gerhobbelt/markdown-it-attrs": "3.0.3-20",
     "@gerhobbelt/markdown-it-testgen": "0.1.6-17",
-    "@gerhobbelt/markdown-it-wikilinks": "1.1.1-7",
-    "@gerhobbelt/prepend-header": "1.0.8-3",
-    "@types/markdown-it": "10.0.1",
-    "@typescript-eslint/eslint-plugin": "3.7.1",
-    "@typescript-eslint/parser": "3.7.1",
-    "babel-plugin-add-module-exports": "1.0.2",
-    "cross-env": "7.0.2",
-    "eslint": "7.5.0",
-    "microbundle": "0.12.3",
-    "mocha": "8.0.1",
+    "@gerhobbelt/markdown-it-wikilinks": "1.1.1-8",
+    "@gerhobbelt/prepend-header": "1.1.0-7",
+    "@types/markdown-it": "12.0.1",
+    "@typescript-eslint/eslint-plugin": "4.14.1",
+    "@typescript-eslint/parser": "4.14.1",
+    "babel-plugin-add-module-exports": "1.0.4",
+    "cross-env": "7.0.3",
+    "eslint": "7.18.0",
+    "microbundle": "0.13.0",
+    "mocha": "8.2.1",
     "nyc": "15.1.0"
   },
   "reporter": [
     "lcov",
     "text",
+    "html",
     "text-summary"
   ]
 }

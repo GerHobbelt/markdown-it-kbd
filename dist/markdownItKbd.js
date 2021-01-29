@@ -1,7 +1,5 @@
 /*! markdown-it-kbd 2.2.0-7 https://github.com//GerHobbelt/markdown-it-kbd @license GPL-3.0 */
 
-'use strict';
-
 // [[kbd]]
 //
 let options = {
@@ -103,5 +101,5 @@ function kbdplugin(markdownit, opts) {
   markdownit.inline.ruler.before('link', 'kbd', tokenize);
 }
 
-module.exports = kbdplugin;
-//# sourceMappingURL=markdownItKbd.js.map
+export default kbdplugin;
+//# sourceMappingURL=markdownItKbd.modern.js.map
