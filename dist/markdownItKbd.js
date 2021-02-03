@@ -1,4 +1,4 @@
-/*! markdown-it-kbd 2.2.0-7 https://github.com//GerHobbelt/markdown-it-kbd @license GPL-3.0 */
+/*! markdown-it-kbd 2.2.0-8 https://github.com//GerHobbelt/markdown-it-kbd @license GPL-3.0 */
 
 // [[kbd]]
 //
