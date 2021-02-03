@@ -11,16 +11,12 @@ const defaultOptions = {
   TAG: 'kbd',
 
   // intern use; derived at time of initialization:
-  MARKER_OPEN_1ST_CHR: 0,
-  MARKER_OPEN_1: '',
-  MARKER_CLOSE_1: ''
+  MARKER_OPEN_1ST_CHR: 0
 };
 
 export default function kbdplugin(markdownit: MarkdownIt, opts): void {
   const options = Object.assign({}, defaultOptions, opts);
   options.MARKER_OPEN_1ST_CHR = options.MARKER_OPEN.charCodeAt(0);
-  options.MARKER_OPEN_1 = options.MARKER_OPEN[0];
-  options.MARKER_CLOSE_1 = options.MARKER_CLOSE[0];
 
 
   function findNextNonEscapedMarker(src, start, marker) {
@@ -53,9 +49,7 @@ export default function kbdplugin(markdownit: MarkdownIt, opts): void {
   function findMatchingClose(src, start, level) {
     console.error(`findMatchingClose: src.sliced:'${src.slice(start)} start:${start} level:${level}`);
 
-    let searchOffset = start;
-
-    let end = findNextNonEscapedMarker(src, searchOffset, options.MARKER_CLOSE);
+    let end = findNextNonEscapedMarker(src, start, options.MARKER_CLOSE);
     if (end < 0) {
       // no end marker found,
       // input ended before closing sequence
@@ -64,10 +58,10 @@ export default function kbdplugin(markdownit: MarkdownIt, opts): void {
     }
 
     // first skip all inner KBD chunks:
-    let innerStart = start;
+    let innerStart = findNextNonEscapedMarker(src, start, options.MARKER_OPEN);
+    let searchOffset = start;
 
     while (innerStart >= 0) {
-      innerStart = findNextNonEscapedMarker(src, innerStart, options.MARKER_OPEN);
       // when there's a START *before* our END, then that MUST be an *inner* START:
       // we should find *it's* matching END. That doesn't necessarily have to be
       // the one we found already, as this stuff may be nested several levels!
@@ -81,8 +75,7 @@ export default function kbdplugin(markdownit: MarkdownIt, opts): void {
           return -1;
         }
         searchOffset = end + options.MARKER_CLOSE.length;
-        innerStart = searchOffset;
-
+        innerStart = findNextNonEscapedMarker(src, searchOffset, options.MARKER_OPEN);
         end = findNextNonEscapedMarker(src, searchOffset, options.MARKER_CLOSE);
         if (end < 0) {
           // no end marker found,

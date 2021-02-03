@@ -75,9 +75,9 @@ describe('markdown-it-kbd', () => {
 
   it('can be included in links', () => {
     assert.strictEqual(md.render(trimmed(`
-      [[[[[Ctrl]]+[[V]]]]](https://devnull-as-a-service.com/dev/null)
+      [ [[[[Ctrl]]+[[V]]]] ](https://devnull-as-a-service.com/dev/null)
     `)), trimmed(`
-      <p><a href="https://devnull-as-a-service.com/dev/null"><kbd><kbd>Ctrl</kbd>+<kbd>V</kbd></kbd></a></p>
+      <p><a href="https://devnull-as-a-service.com/dev/null"> <kbd><kbd>Ctrl</kbd>+<kbd>V</kbd></kbd> </a></p>
     `));
   });
 
@@ -96,11 +96,11 @@ describe('markdown-it-kbd', () => {
     [ '[[that]] ]] [[and this]]', '<kbd>that</kbd> ]] <kbd>and this</kbd>' ],
     [ '[[ *some markup* [[ `more markup` [[valid]] **even more**', '[[ <em>some markup</em> [[ <code>more markup</code> <kbd>valid</kbd> <strong>even more</strong>' ],
     [ '[[', '[[' ],
-    [ '[[[x]]', '[<kbd>x</kbd>' ],
-    [ '[[[x]]]', '[<kbd>x</kbd>]' ],
+    [ '[ [[x]]', '[ <kbd>x</kbd>' ],
+    [ '[ [[x]] ]', '[ <kbd>x</kbd> ]' ],
     [ '[[*test*', '[[<em>test</em>' ],
-    [ '[[[Shift]]+[[F3]]]', '[<kbd>Shift</kbd>+<kbd>F3</kbd>]' ],
-    [ '[[[[Shift]]+[[F3]]]', '[[<kbd>Shift</kbd>+<kbd>F3</kbd>]' ]
+    [ '[ [[Shift]]+[[F3]] ]', '[ <kbd>Shift</kbd>+<kbd>F3</kbd> ]' ],
+    [ '[[ [[Shift]]+[[F3]] ]', '[[ <kbd>Shift</kbd>+<kbd>F3</kbd> ]' ]
   ].forEach((spec) => {
     it(`renders correctly: ${spec[0]}`, () => {
       const input = spec[0];
