@@ -22,7 +22,6 @@ function kbdplugin(markdownit, opts) {
       end = src.indexOf(marker, searchOffset);
 
       if (end < 0) {
-        console.error(`--> NOT FOUND: marker:'${marker}' start:${start} src.sliced:'${src.slice(start)}'`);
         return -1;
       } // count number of escape characters before marker:
       // if ODD, then marker is escaped:
@@ -43,18 +42,15 @@ function kbdplugin(markdownit, opts) {
       searchOffset = end + 1;
     }
 
-    console.error(`--> !!! FOUND: marker:'${marker}' end:${end} start:${start} src.sliced:'${src.slice(start)}'`);
     return end;
   }
 
   function findMatchingClose(src, start, level) {
-    console.error(`findMatchingClose: src.sliced:'${src.slice(start)} start:${start} level:${level}`);
     let end = findNextNonEscapedMarker(src, start, options.MARKER_CLOSE);
 
     if (end < 0) {
       // no end marker found,
       // input ended before closing sequence
-      console.error('--> false E');
       return -1;
     } // first skip all inner KBD chunks:
 
@@ -69,10 +65,9 @@ function kbdplugin(markdownit, opts) {
       if (innerStart >= 0 && innerStart < end) {
         searchOffset = innerStart + options.MARKER_OPEN.length; // found one. There may be more. So we move our `end` forward now to ensure the next inner KBD chunk is found as well.
 
-        end = findMatchingClose(src, searchOffset, level + 1);
+        end = findMatchingClose(src, searchOffset);
 
         if (end < 0) {
-          console.error('--> false F');
           return -1;
         }
 
@@ -83,7 +78,6 @@ function kbdplugin(markdownit, opts) {
         if (end < 0) {
           // no end marker found,
           // input ended before closing sequence
-          console.error('--> false G');
           return -1;
         }
       } else {
@@ -93,7 +87,6 @@ function kbdplugin(markdownit, opts) {
     } // the last END marker found is our own:
 
 
-    console.error(`--> found matching close: end:${end} start:${start} src.sliced:'${src.slice(start)}' level:${level}`);
     return end;
   }
   /*
@@ -108,32 +101,27 @@ function kbdplugin(markdownit, opts) {
 
     let start = state.pos;
     const max = state.posMax;
-    console.error(`tokenize?: '${state.src}' --> '${state.src.slice(start)}'`);
     const momChar = state.src.charCodeAt(start); // We are looking for two times the open symbol.
 
     if (momChar !== options.MARKER_OPEN_1ST_CHR) {
-      console.error(`--> false A ${options.MARKER_OPEN_1ST_CHR} -- ${momChar}`);
       return false;
     }
 
     let src = state.src.slice(start);
 
     if (!src.startsWith(options.MARKER_OPEN)) {
-      console.error(`--> false B src:'${src}' rv:${src.startsWith(options.MARKER_OPEN)} marker:'${options.MARKER_OPEN}'`);
       return false;
     }
 
     const startLen = options.MARKER_OPEN.length;
     start += startLen;
-    src = src.slice(startLen);
-    console.error(`src = '${src}'`); // find the end sequence
+    src = src.slice(startLen); // find the end sequence
 
-    let end = findMatchingClose(src, 0, 1);
+    let end = findMatchingClose(src, 0);
 
     if (end < 0) {
       // no end marker found,
       // input ended before closing sequence
-      console.error('--> false C');
       return false;
     }
 
@@ -141,7 +129,6 @@ function kbdplugin(markdownit, opts) {
 
     if (lf >= 0 && lf < end) {
       // found end of line before the end sequence. Thus, ignore our start sequence!
-      console.error(`--> false D ${lf}`);
       return false;
     } // make end position into absolute index
 
@@ -152,13 +139,11 @@ function kbdplugin(markdownit, opts) {
 
     state.pos = start;
     state.posMax = end;
-    state.md.inline.tokenize(state); //console.error('inline.tokenize:', state.md);
-
+    state.md.inline.tokenize(state);
     state.pos = end + options.MARKER_CLOSE.length;
     state.posMax = max; // end tag
 
     state.push('kbd_close', options.TAG, -1);
-    console.error(`--> TRUE  --> '${state.src.slice(state.pos)}'`);
     return true;
   }
 
