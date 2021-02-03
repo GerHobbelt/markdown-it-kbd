@@ -44,7 +44,8 @@ describe('markdown-it-kbd', () => {
     [ '[[\\[]]', '<kbd>[</kbd>' ],
     [ '[[\\]]]', '<kbd>]</kbd>' ],
     [ '[[\\[\\[]]', '<kbd>[[</kbd>' ],
-    [ '[[\\]\\]]]', '<kbd>]]</kbd>' ]
+    [ '[[\\]\\]]]', '<kbd>]]</kbd>' ],
+    [ '[[\\\\]]', '<kbd>\\</kbd>' ]
   ].forEach((spec) => {
     it(`supports escaped delimiters: ${spec[0]}`, () => {
       const input = spec[0];
@@ -98,8 +99,8 @@ describe('markdown-it-kbd', () => {
     [ '[[[x]]', '[<kbd>x</kbd>' ],
     [ '[[[x]]]', '[<kbd>x</kbd>]' ],
     [ '[[*test*', '[[<em>test</em>' ],
-    [ '[[[[Shift]]+[[F3]]]', '[[<kbd>Shift</kbd>+<kbd>F3</kbd>]' ],
-    [ '[[\\\\]]', '<kbd>\\</kbd>' ]
+    [ '[[[Shift]]+[[F3]]]', '[<kbd>Shift</kbd>+<kbd>F3</kbd>]' ],
+    [ '[[[[Shift]]+[[F3]]]', '[[<kbd>Shift</kbd>+<kbd>F3</kbd>]' ]
   ].forEach((spec) => {
     it(`renders correctly: ${spec[0]}`, () => {
       const input = spec[0];

@@ -2,9 +2,7 @@
 //
 
 // @ts-ignore markdown-it has no types and it’s not worth the effort adding a *.d.ts file
-import MarkdownIt from 'markdown-it';
-// @ts-ignore markdown-it has no types and it’s not worth the effort adding a *.d.ts file
-import StateInline from 'markdown-it/lib/rules_inline/state_inline';
+import type { StateInline, MarkdownIt } from '@types/markdown-it';
 
 let options = {
   MARKER_OPEN: '[[',
@@ -13,42 +11,19 @@ let options = {
   TAG: 'kbd',
 
   // intern use; derived at time of initialization:
-  MARKER_OPEN_1ST_CHR: 0
+  MARKER_OPEN_1ST_CHR: 0,
+  MARKER_OPEN_1: '',
+  MARKER_CLOSE_1: ''
 };
 
-/*
- * Add delimiters for double occurrences of MARKER_SYMBOL.
- */
-function tokenize(state: StateInline, silent: boolean) {
-  if (silent) {
-    return false;
-  }
-
-  let start = state.pos;
-  const max = state.posMax;
-  const momChar = state.src.charCodeAt(start);
-
-  // We are looking for two times the open symbol.
-  if (momChar !== options.MARKER_OPEN_1ST_CHR) {
-    return false;
-  }
-  let src = state.src.slice(start);
-  if (!src.startsWith(options.MARKER_OPEN)) {
-    return false;
-  }
-  const startLen = options.MARKER_OPEN.length;
-  start += startLen;
-  src = src.slice(startLen);
-
-  // find the end sequence
+function findNextNonEscapedMarker(src, start, marker) {
   let end;
-  let searchOffset = 0;
+  let searchOffset = start;
   for (;;) {
-    end = src.indexOf(options.MARKER_CLOSE, searchOffset);
+    end = src.indexOf(marker, searchOffset);
     if (end < 0) {
-      // no end marker found,
-      // input ended before closing sequence
-      return false;
+      console.error(`--> NOT FOUND: marker:'${marker}' start:${start} src.sliced:'${src.slice(start)}'`);
+      return -1;
     }
 
     // count number of escape characters before marker:
@@ -64,15 +39,102 @@ function tokenize(state: StateInline, silent: boolean) {
     // skip first character of escaped end marker and try again:
     searchOffset = end + 1;
   }
+  console.error(`--> !!! FOUND: marker:'${marker}' end:${end} start:${start} src.sliced:'${src.slice(start)}'`);
+  return end;
+}
+
+function findMatchingClose(src, start, level) {
+  console.error(`findMatchingClose: src.sliced:'${src.slice(start)} start:${start} level:${level}`);
+
+  let searchOffset = start;
+
+  let end = findNextNonEscapedMarker(src, searchOffset, options.MARKER_CLOSE);
+  if (end < 0) {
+    // no end marker found,
+    // input ended before closing sequence
+    console.error('--> false E');
+    return -1;
+  }
+
+  // first skip all inner KBD chunks:
+  let innerStart = start;
+
+  while (innerStart >= 0) {
+    innerStart = findNextNonEscapedMarker(src, innerStart, options.MARKER_OPEN);
+    // when there's a START *before* our END, then that MUST be an *inner* START:
+    // we should find *it's* matching END. That doesn't necessarily have to be
+    // the one we found already, as this stuff may be nested several levels!
+    if (innerStart >= 0 && innerStart < end) {
+      searchOffset = innerStart + options.MARKER_OPEN.length;
+
+      // found one. There may be more. So we move our `end` forward now to ensure the next inner KBD chunk is found as well.
+      end = findMatchingClose(src, searchOffset, level + 1);
+      if (end < 0) {
+        console.error('--> false F');
+        return -1;
+      }
+      searchOffset = end + options.MARKER_CLOSE.length;
+      innerStart = searchOffset;
+
+      end = findNextNonEscapedMarker(src, searchOffset, options.MARKER_CLOSE);
+      if (end < 0) {
+        // no end marker found,
+        // input ended before closing sequence
+        console.error('--> false G');
+        return -1;
+      }
+    } else {
+      // we only found a START that's beyond our END, so it doesn't matter. Stop looking for inner KBD chunks.
+      innerStart = -1;
+    }
+  }
+
+  // the last END marker found is our own:
+  console.error(`--> found matching close: end:${end} start:${start} src.sliced:'${src.slice(start)}' level:${level}`);
+  return end;
+}
+
+/*
+ * Add delimiters for double occurrences of MARKER_SYMBOL.
+ */
+function tokenize(state: StateInline, silent: boolean) {
+  if (silent) {
+    return false;
+  }
+
+  let start = state.pos;
+  const max = state.posMax;
+  console.error(`tokenize?: '${state.src}' --> '${state.src.slice(start)}'`);
+  const momChar = state.src.charCodeAt(start);
+
+  // We are looking for two times the open symbol.
+  if (momChar !== options.MARKER_OPEN_1ST_CHR) {
+    console.error(`--> false A ${options.MARKER_OPEN_1ST_CHR} -- ${momChar}`);
+    return false;
+  }
+  let src = state.src.slice(start);
+  if (!src.startsWith(options.MARKER_OPEN)) {
+    console.error('--> false B');
+    return false;
+  }
+  const startLen = options.MARKER_OPEN.length;
+  start += startLen;
+  src = src.slice(startLen);
+  console.error(`src = '${src}'`);
+
+  // find the end sequence
+  let end = findMatchingClose(src, 0, 1);
+  if (end < 0) {
+    // no end marker found,
+    // input ended before closing sequence
+    console.error('--> false C');
+    return false;
+  }
 
   const lf = src.indexOf('\n');
   if (lf >= 0 && lf < end) {
     // found end of line before the end sequence. Thus, ignore our start sequence!
-    return false;
-  }
-  const second = src.indexOf(options.MARKER_OPEN);
-  if (second >= 0 && second < end) {
-    // found another opening sequence before the end. Thus, ignore ours!
+    console.error(`--> false D ${lf}`);
     return false;
   }
 
@@ -85,17 +147,21 @@ function tokenize(state: StateInline, silent: boolean) {
   state.pos = start;
   state.posMax = end;
   state.md.inline.tokenize(state);
+  //console.error('inline.tokenize:', state.md);
   state.pos = end + options.MARKER_CLOSE.length;
   state.posMax = max;
   // end tag
   state.push('kbd_close', options.TAG, -1);
 
+  console.error(`--> TRUE  --> '${state.src.slice(state.pos)}'`);
   return true;
 }
 
 export default function kbdplugin(markdownit: MarkdownIt, opts): void {
   options = Object.assign(options, opts);
   options.MARKER_OPEN_1ST_CHR = options.MARKER_OPEN.charCodeAt(0);
+  options.MARKER_OPEN_1 = options.MARKER_OPEN[0];
+  options.MARKER_CLOSE_1 = options.MARKER_CLOSE[0];
 
   markdownit.inline.ruler.before('link', 'kbd', tokenize);
 }
