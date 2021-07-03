@@ -2,6 +2,20 @@
 
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.2.2](https://github.com/jGleitz/markdown-it-kbd/compare/v2.2.1...v2.2.2) (2021-03-06)
+
+
+### Bug Fixes
+
+* declare MIT licence in package.json ([ea7d28b](https://github.com/jGleitz/markdown-it-kbd/commit/ea7d28b0fbd4007ac8f0c5208f7f2686e4a565ce))
+
+## [2.2.1](https://github.com/jGleitz/markdown-it-kbd/compare/v2.2.0...v2.2.1) (2021-03-06)
+
+
+### Bug Fixes
+
+* **licence:** re-license under MIT ([050926e](https://github.com/jGleitz/markdown-it-kbd/commit/050926e7dd5369ca7d925fc9337767e3d6239ff3))
+
 # [2.2.0](https://github.com/jGleitz/markdown-it-kbd/compare/v2.1.0...v2.2.0) (2020-07-06)
 
 
