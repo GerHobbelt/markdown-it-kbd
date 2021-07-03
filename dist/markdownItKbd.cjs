@@ -1,4 +1,4 @@
-/*! markdown-it-kbd 2.2.2-9 https://github.com//GerHobbelt/markdown-it-kbd @license GPL-3.0 */
+/*! markdown-it-kbd 2.2.2-10 https://github.com//GerHobbelt/markdown-it-kbd @license GPL-3.0 */
 
 'use strict';
 

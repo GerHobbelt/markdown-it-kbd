@@ -1,6 +1,6 @@
 {
   "name": "@gerhobbelt/markdown-it-kbd",
-  "version": "2.2.2-9",
+  "version": "2.2.2-10",
   "description": "Markdown-it syntax add-on for keystrokes. Renders [[x]] as <kbd>x</kbd>",
   "keywords": [
     "markdown-it-plugin",
@@ -10,13 +10,12 @@
     "kbd"
   ],
   "homepage": "https://github.com/jGleitz/markdown-it-kbd",
-  "license": "MIT",
+  "license": "GPL-3.0",
   "author": {
     "name": "Joshua Gleitze",
     "url": "https://joshuagleitze.de"
   },
   "repository": "jGleitz/markdown-it-kbd",
-  "license": "GPL-3.0",
   "type": "module",
   "source": "src/index.ts",
   "main": "./dist/markdownItKbd.cjs",
