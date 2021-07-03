@@ -11,7 +11,7 @@ import markdownItAttrs from '@gerhobbelt/markdown-it-attrs';
 // markdown-it-wikilinks has no types and it’s not worth the effort adding a *.d.ts file
 import markdownItWikiLinks from '@gerhobbelt/markdown-it-wikilinks';
 
-import markdownItKbd from '../dist/markdownitKbd.modern.js';
+import markdownItKbd from '../dist/markdownItKbd.modern.js';
 
 
 const read = (path) => fs.readFileSync(`testdata/${path}`).toString();
