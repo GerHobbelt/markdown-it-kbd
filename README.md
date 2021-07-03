@@ -1,7 +1,9 @@
 # markdown-it-kbd 
 
-[![Build Status](https://travis-ci.org/jGleitz/markdown-it-prism.svg?branch=master)](https://travis-ci.org/jGleitz/markdown-it-kbd) 
-[![npm version](https://badge.fury.io/js/markdown-it-kbd.svg)](https://badge.fury.io/js/markdown-it-kbd) 
+[![Node.js CI](https://github.com/GerHobbelt/markdown-it-kbd/actions/workflows/node.js.yml/badge.svg)](https://github.com/GerHobbelt/markdown-it-kbd/actions/workflows/node.js.yml)
+![CircleCI](https://img.shields.io/circleci/build/github/GerHobbelt/markdown-it-kbd)
+[![NPM version](https://img.shields.io/npm/v/@gerhobbelt/markdown-it-kbd.svg?style=flat)](https://www.npmjs.org/package/@gerhobbelt/markdown-it-kbd)
+
 
 > [markdown-it](https://github.com/markdown-it/markdown-it) plugin for keystrokes
 

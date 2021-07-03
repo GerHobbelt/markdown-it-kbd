@@ -2,6 +2,8 @@
 
 // [[kbd]]
 //
+// markdown-it has no types and it’s not worth the effort adding a *.d.ts file
+//import type { MarkdownIt } from '@types/markdown-it';
 const defaultOptions = {
   MARKER_OPEN: '[[',
   MARKER_CLOSE: ']]',
@@ -151,4 +153,4 @@ function kbdplugin(markdownit, opts) {
 }
 
 export default kbdplugin;
-//# sourceMappingURL=markdownItKbd.modern.js.map
+//# sourceMappingURL=markdownItKbd.mjs.map

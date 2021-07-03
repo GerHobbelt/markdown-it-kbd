@@ -4,13 +4,14 @@
 import path from 'path';
 import fs from 'fs';
 import assert from 'assert';
-// @ts-ignore markdown-it-attrs has no types and it’s not worth the effort adding a *.d.ts file
+// markdown-it-attrs has no types and it’s not worth the effort adding a *.d.ts file
 import markdownit from '@gerhobbelt/markdown-it';
-// @ts-ignore markdown-it-attrs has no types and it’s not worth the effort adding a *.d.ts file
+// markdown-it-attrs has no types and it’s not worth the effort adding a *.d.ts file
 import markdownItAttrs from '@gerhobbelt/markdown-it-attrs';
-// @ts-ignore markdown-it-wikilinks has no types and it’s not worth the effort adding a *.d.ts file
+// markdown-it-wikilinks has no types and it’s not worth the effort adding a *.d.ts file
 import markdownItWikiLinks from '@gerhobbelt/markdown-it-wikilinks';
-import markdownItKbd from '../dist/markdownitKbd.js';
+
+import markdownItKbd from '../dist/markdownitKbd.modern.js';
 
 
 const read = (path) => fs.readFileSync(`testdata/${path}`).toString();
